@@ -82,44 +82,88 @@ ESPEAK_TO_IPA = {
 # Phoneme mappings with eSpeak and IPA
 WORDS = {
     "tomato": {
-        "GA": {"espeak": "t @ m 3: t @U", "ipa": "təˈmeɪtoʊ"},
-        "RP": {"espeak": "t @ m A: t @U", "ipa": "təˈmɑːtəʊ"}
+        "American": {"espeak": "t @ m 3: t @U", "ipa": "təˈmeɪtoʊ"},
+        "British": {"espeak": "t @ m A: t @U", "ipa": "təˈmɑːtəʊ"}
     },
     "dance": {
-        "GA": {"espeak": "d æ n s", "ipa": "dæns"},
-        "RP": {"espeak": "d A: n s", "ipa": "dɑːns"}
+        "American": {"espeak": "d æ n s", "ipa": "dæns"},
+        "British": {"espeak": "d A: n s", "ipa": "dɑːns"}
     },
     "bath": {
-        "GA": {"espeak": "b æ T", "ipa": "bæθ"},
-        "RP": {"espeak": "b A: T", "ipa": "bɑːθ"}
+        "American": {"espeak": "b æ T", "ipa": "bæθ"},
+        "British": {"espeak": "b A: T", "ipa": "bɑːθ"}
     },
     "grass": {
-        "GA": {"espeak": "g r æ s", "ipa": "ɡræs"},
-        "RP": {"espeak": "g r A: s", "ipa": "ɡrɑːs"}
+        "American": {"espeak": "g r æ s", "ipa": "ɡræs"},
+        "British": {"espeak": "g r A: s", "ipa": "ɡrɑːs"}
     },
     "lot": {
-        "GA": {"espeak": "l A t", "ipa": "lɑt"},
-        "RP": {"espeak": "l O t", "ipa": "lɒt"}
+        "American": {"espeak": "l A t", "ipa": "lɑt"},
+        "British": {"espeak": "l O t", "ipa": "lɒt"}
     },
     "cloth": {
-        "GA": {"espeak": "k l O T", "ipa": "klɔθ"},
-        "RP": {"espeak": "k l O T", "ipa": "klɒθ"}
+        "American": {"espeak": "k l O T", "ipa": "klɔθ"},
+        "British": {"espeak": "k l O T", "ipa": "klɒθ"}
     },
     "phone": {
-        "GA": {"espeak": "f @U n", "ipa": "foʊn"},
-        "RP": {"espeak": "f @U n", "ipa": "fəʊn"}
+        "American": {"espeak": "f @U n", "ipa": "foʊn"},
+        "British": {"espeak": "f @U n", "ipa": "fəʊn"}
     },
     "schedule": {
-        "GA": {"espeak": "s k E dZ u: l", "ipa": "ˈskɛdʒuːl"},
-        "RP": {"espeak": "S E dZ u: l", "ipa": "ˈʃɛdʒuːl"}
+        "American": {"espeak": "s k E dZ u: l", "ipa": "ˈskɛdʒuːl"},
+        "British": {"espeak": "S E dZ u: l", "ipa": "ˈʃɛdʒuːl"}
     },
     "lever": {
-        "GA": {"espeak": "l E v @", "ipa": "ˈlɛvɚ"},
-        "RP": {"espeak": "l i: v @", "ipa": "ˈliːvə"}
+        "American": {"espeak": "l E v @", "ipa": "ˈlɛvɚ"},
+        "British": {"espeak": "l i: v @", "ipa": "ˈliːvə"}
     },
     "route": {
-        "GA": {"espeak": "r u: t", "ipa": "rut"},
-        "RP": {"espeak": "r aU t", "ipa": "raʊt"}
+        "American": {"espeak": "r u: t", "ipa": "rut"},
+        "British": {"espeak": "r aU t", "ipa": "raʊt"}
+    },
+    "go": {
+        "American": {"espeak": "g @U", "ipa": "goʊ"},
+        "British": {"espeak": "g @U", "ipa": "gəʊ"}
+    },
+    "home": {
+        "American": {"espeak": "h @U m", "ipa": "hoʊm"},
+        "British": {"espeak": "h @U m", "ipa": "həʊm"}
+    },
+    "boat": {
+        "American": {"espeak": "b @U t", "ipa": "boʊt"},
+        "British": {"espeak": "b @U t", "ipa": "bəʊt"}
+    },
+    "know": {
+        "American": {"espeak": "n @U", "ipa": "noʊ"},
+        "British": {"espeak": "n @U", "ipa": "nəʊ"}
+    },
+    "show": {
+        "American": {"espeak": "S @U", "ipa": "ʃoʊ"},
+        "British": {"espeak": "S @U", "ipa": "ʃəʊ"}
+    },
+    "low": {
+        "American": {"espeak": "l @U", "ipa": "loʊ"},
+        "British": {"espeak": "l @U", "ipa": "ləʊ"}
+    },
+    "road": {
+        "American": {"espeak": "r @U d", "ipa": "roʊd"},
+        "British": {"espeak": "r @U d", "ipa": "rəʊd"}
+    },
+    "coat": {
+        "American": {"espeak": "k @U t", "ipa": "koʊt"},
+        "British": {"espeak": "k @U t", "ipa": "kəʊt"}
+    },
+    "note": {
+        "American": {"espeak": "n @U t", "ipa": "noʊt"},
+        "British": {"espeak": "n @U t", "ipa": "nəʊt"}
+    },
+    "bone": {
+        "American": {"espeak": "b @U n", "ipa": "boʊn"},
+        "British": {"espeak": "b @U n", "ipa": "bəʊn"}
+    },
+    "tone": {
+        "American": {"espeak": "t @U n", "ipa": "toʊn"},
+        "British": {"espeak": "t @U n", "ipa": "təʊn"}
     },
 }
 
@@ -158,14 +202,14 @@ def text_to_speech():
     """Generate speech audio using espeak"""
     data = request.get_json()
     text = data.get('text', '')
-    accent = data.get('accent', 'GA')
+    accent = data.get('accent', 'American')
     
     if not text:
         return jsonify({"error": "No text provided"}), 400
     
     # Map accent to espeak voice
-    # GA: en-us, RP: en-gb
-    voice = 'en-us' if accent == 'GA' else 'en-gb'
+    # American: en-us, British: en-gb
+    voice = 'en-us' if accent == 'American' else 'en-gb'
     
     # Generate audio file
     audio_path = '/tmp/tts_output.wav'
@@ -197,7 +241,7 @@ def analyze():
         return jsonify({"error": "No audio file"}), 400
     
     audio_file = request.files['audio']
-    accent = request.form.get('accent', 'GA')
+    accent = request.form.get('accent', 'American')
     word = request.form.get('word', '')
     model_id = request.form.get('model', 'wav2vec2_lv60')
     

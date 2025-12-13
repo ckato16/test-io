@@ -1,6 +1,6 @@
 let mediaRecorder;
 let audioChunks = [];
-let selectedAccent = 'GA';
+let selectedAccent = 'American';
 let selectedModel = '';
 
 // Load available models
