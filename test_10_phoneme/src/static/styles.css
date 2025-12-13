@@ -93,6 +93,22 @@ button:disabled {
     background: #da190b;
 }
 
+.listen-btn {
+    background: #2196F3;
+    color: white;
+    border-color: #2196F3;
+    width: 100%;
+}
+
+.listen-btn:hover {
+    background: #0b7dda;
+}
+
+.listen-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .result-box {
     background: #f5f5f5;
     padding: 20px;

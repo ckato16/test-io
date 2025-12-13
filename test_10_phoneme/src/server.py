@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 import librosa
 import torch
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from difflib import SequenceMatcher
+import subprocess
+import os
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -150,6 +152,44 @@ def get_models():
         if model_data["model"]:
             available.append({"id": model_id, "name": model_data["name"]})
     return jsonify(available)
+
+@app.route('/tts', methods=['POST'])
+def text_to_speech():
+    """Generate speech audio using espeak"""
+    data = request.get_json()
+    text = data.get('text', '')
+    accent = data.get('accent', 'GA')
+    
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+    
+    # Map accent to espeak voice
+    # GA: en-us, RP: en-gb
+    voice = 'en-us' if accent == 'GA' else 'en-gb'
+    
+    # Generate audio file
+    audio_path = '/tmp/tts_output.wav'
+    try:
+        # Use espeak-ng to generate WAV file
+        # -s: speed (words per minute), -g: gap between words (ms)
+        # -v: voice, -w: output file
+        subprocess.run([
+            'espeak-ng',
+            '-s', '150',  # Speed
+            '-g', '5',    # Gap between words
+            '-v', voice,
+            '-w', audio_path,
+            text
+        ], check=True, capture_output=True)
+        
+        if not os.path.exists(audio_path):
+            return jsonify({"error": "Audio generation failed"}), 500
+        
+        return send_file(audio_path, mimetype='audio/wav')
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"espeak error: {e.stderr.decode()}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"TTS failed: {e}"}), 500
 
 @app.route('/analyze', methods=['POST'])
 def analyze():

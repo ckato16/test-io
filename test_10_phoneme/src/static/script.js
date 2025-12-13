@@ -33,6 +33,70 @@ document.getElementById('model-select').addEventListener('change', (e) => {
     selectedModel = e.target.value;
 });
 
+// Show/hide listen button when word is selected
+document.getElementById('word-select').addEventListener('change', (e) => {
+    const listenSection = document.getElementById('listen-section');
+    if (e.target.value) {
+        listenSection.style.display = 'block';
+    } else {
+        listenSection.style.display = 'none';
+    }
+});
+
+// Listen button functionality
+document.getElementById('listen-button').addEventListener('click', async () => {
+    const word = document.getElementById('word-select').value;
+    if (!word) {
+        alert('Select a word first');
+        return;
+    }
+    
+    const button = document.getElementById('listen-button');
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '⏳ Generating...';
+    
+    try {
+        const response = await fetch('/tts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: word,
+                accent: selectedAccent
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'TTS failed');
+        }
+        
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            button.disabled = false;
+            button.textContent = originalText;
+        };
+        
+        audio.onerror = () => {
+            alert('Error playing audio');
+            button.disabled = false;
+            button.textContent = originalText;
+        };
+        
+        await audio.play();
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+        button.disabled = false;
+        button.textContent = originalText;
+    }
+});
+
 document.getElementById('record-button').addEventListener('click', async () => {
     audioChunks = [];
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
