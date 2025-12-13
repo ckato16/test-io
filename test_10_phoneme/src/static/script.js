@@ -20,39 +20,112 @@ async function loadModels() {
 
 loadModels();
 
-// Accent selection
-document.querySelectorAll('.accent-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+// Accent selection (using event delegation)
+document.getElementById('accent-section').addEventListener('click', (e) => {
+    if (e.target.classList.contains('accent-btn')) {
         document.querySelectorAll('.accent-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         selectedAccent = e.target.dataset.accent;
-    });
+    }
 });
 
 document.getElementById('model-select').addEventListener('change', (e) => {
     selectedModel = e.target.value;
 });
 
-// Show/hide listen button when word is selected
-document.getElementById('word-select').addEventListener('change', (e) => {
+let selectedWord = '';
+
+// Load patterns on page load
+async function loadPatterns() {
+    try {
+        const response = await fetch('/patterns');
+        const patterns = await response.json();
+        const select = document.getElementById('pattern-select');
+        
+        patterns.forEach(pattern => {
+            const opt = document.createElement('option');
+            opt.value = pattern.id;
+            opt.textContent = `Pattern ${pattern.id}: ${pattern.name} - ${pattern.description}`;
+            select.appendChild(opt);
+        });
+    } catch (error) {
+        console.error('Error loading patterns:', error);
+    }
+}
+
+loadPatterns();
+
+// Handle pattern selection
+document.getElementById('pattern-select').addEventListener('change', async (e) => {
+    const patternId = e.target.value;
+    const exampleHeading = document.getElementById('example-heading');
+    const exampleButtons = document.getElementById('example-buttons');
+    const accentHeading = document.getElementById('accent-heading');
+    const accentSection = document.getElementById('accent-section');
     const listenSection = document.getElementById('listen-section');
-    if (e.target.value) {
-        listenSection.style.display = 'block';
+    
+    if (patternId) {
+        // Load pattern words
+        try {
+            const response = await fetch(`/pattern/${patternId}/words`);
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Show example heading and buttons
+                exampleHeading.style.display = 'block';
+                exampleButtons.style.display = 'block';
+                
+                // Clear and populate example buttons
+                exampleButtons.innerHTML = '';
+                data.words.forEach(word => {
+                    const btn = document.createElement('button');
+                    btn.className = 'example-btn';
+                    btn.textContent = word;
+                    btn.dataset.word = word;
+                    btn.addEventListener('click', () => {
+                        // Remove selected class from all buttons
+                        document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('selected'));
+                        // Add selected class to clicked button
+                        btn.classList.add('selected');
+                        selectedWord = word;
+                        
+                        // Show accent selection and listen button
+                        accentHeading.style.display = 'block';
+                        accentSection.style.display = 'block';
+                        listenSection.style.display = 'block';
+                    });
+                    exampleButtons.appendChild(btn);
+                });
+                
+                // Hide accent and listen sections until word is selected
+                accentHeading.style.display = 'none';
+                accentSection.style.display = 'none';
+                listenSection.style.display = 'none';
+                selectedWord = '';
+            }
+        } catch (error) {
+            console.error('Error loading pattern words:', error);
+        }
     } else {
+        exampleHeading.style.display = 'none';
+        exampleButtons.style.display = 'none';
+        accentHeading.style.display = 'none';
+        accentSection.style.display = 'none';
         listenSection.style.display = 'none';
+        selectedWord = '';
     }
 });
 
 // Listen button functionality
 document.getElementById('listen-button').addEventListener('click', async () => {
-    const word = document.getElementById('word-select').value;
-    if (!word) {
-        alert('Select a word first');
+    if (!selectedWord) {
+        alert('Select an example first');
         return;
     }
     
     const button = document.getElementById('listen-button');
     const originalText = button.textContent;
+    
     button.disabled = true;
     button.textContent = '⏳ Generating...';
     
@@ -63,7 +136,7 @@ document.getElementById('listen-button').addEventListener('click', async () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                text: word,
+                text: selectedWord,
                 accent: selectedAccent
             })
         });
@@ -99,15 +172,23 @@ document.getElementById('listen-button').addEventListener('click', async () => {
 
 document.getElementById('record-button').addEventListener('click', async () => {
     audioChunks = [];
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+    const analyzingStatus = document.getElementById('analyzing-status');
     
-    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-    mediaRecorder.onstop = sendAudio;
+    analyzingStatus.style.display = 'none';
     
-    mediaRecorder.start();
-    document.getElementById('record-button').disabled = true;
-    document.getElementById('stop-button').disabled = false;
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.onstop = sendAudio;
+        
+        mediaRecorder.start();
+        document.getElementById('record-button').disabled = true;
+        document.getElementById('stop-button').disabled = false;
+    } catch (error) {
+        alert('Error accessing microphone: ' + error.message);
+    }
 });
 
 document.getElementById('stop-button').addEventListener('click', () => {
@@ -123,40 +204,50 @@ function getScoreColor(score) {
 }
 
 async function sendAudio() {
-    const word = document.getElementById('word-select').value;
-    if (!word) {
-        alert('Select a word first');
+    if (!selectedWord) {
+        alert('Select an example first');
         return;
     }
+    
+    const analyzingStatus = document.getElementById('analyzing-status');
+    analyzingStatus.style.display = 'block';
+    analyzingStatus.textContent = '⏳ Analyzing pronunciation...';
     
     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('accent', selectedAccent);
-    formData.append('word', word);
+    formData.append('word', selectedWord);
     formData.append('model', selectedModel);
     
-    const response = await fetch('/analyze', { method: 'POST', body: formData });
-    const data = await response.json();
-    
-    const resultDiv = document.getElementById('result');
-    const scoreColor = getScoreColor(data.score);
-    
-    resultDiv.innerHTML = `
-        <div class="result-box">
-            <h3>Results</h3>
-            <p><strong>Detected:</strong></p>
-            <p>eSpeak: <code>${data.transcription}</code></p>
-            <p>IPA: <code>${data.detected_ipa}</code></p>
-            <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-            <p><strong>Expected (${selectedAccent}):</strong></p>
-            <p>eSpeak: <code>${data.expected_espeak}</code></p>
-            <p>IPA: <code>${data.expected_ipa}</code></p>
-            <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-            <div class="score-display" style="background: ${scoreColor}; color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                <p style="font-size: 36px; font-weight: bold; margin: 0;">${data.score}%</p>
-                <p style="margin: 5px 0; font-size: 14px;">${data.match ? '✓ Perfect!' : 'Keep practicing'}</p>
+    try {
+        const response = await fetch('/analyze', { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        analyzingStatus.style.display = 'none';
+        
+        const resultDiv = document.getElementById('result');
+        const scoreColor = getScoreColor(data.score);
+        
+        resultDiv.innerHTML = `
+            <div class="result-box">
+                <h3>Results</h3>
+                <p><strong>Detected:</strong></p>
+                <p>eSpeak: <code>${data.transcription}</code></p>
+                <p>IPA: <code>${data.detected_ipa}</code></p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                <p><strong>Expected (${selectedAccent}):</strong></p>
+                <p>eSpeak: <code>${data.expected_espeak}</code></p>
+                <p>IPA: <code>${data.expected_ipa}</code></p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                <div class="score-display" style="background: ${scoreColor}; color: white; padding: 20px; border-radius: 8px; text-align: center;">
+                    <p style="font-size: 36px; font-weight: bold; margin: 0;">${data.score}%</p>
+                    <p style="margin: 5px 0; font-size: 14px;">${data.match ? '✓ Perfect!' : 'Keep practicing'}</p>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    } catch (error) {
+        analyzingStatus.style.display = 'none';
+        alert('Error analyzing audio: ' + error.message);
+    }
 }
