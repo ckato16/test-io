@@ -68,6 +68,29 @@ select {
     border-color: #667eea;
 }
 
+.user-mode-btn {
+    padding: 10px 20px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.user-mode-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.user-mode-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;

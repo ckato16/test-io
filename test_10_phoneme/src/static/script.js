@@ -2,6 +2,7 @@ let mediaRecorder;
 let audioChunks = [];
 let selectedAccent = 'American';
 let selectedModel = '';
+let selectedUserMode = 'Native';
 
 // Load available models
 async function loadModels() {
@@ -20,12 +21,37 @@ async function loadModels() {
 
 loadModels();
 
+// User mode selection
+document.querySelectorAll('.user-mode-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.user-mode-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedUserMode = e.target.dataset.mode;
+        
+        // Reset pattern selection and reload patterns
+        document.getElementById('pattern-select').value = '';
+        document.getElementById('pattern-select').dispatchEvent(new Event('change'));
+        loadPatterns();
+    });
+});
+
 // Accent selection (using event delegation)
 document.getElementById('accent-section').addEventListener('click', (e) => {
     if (e.target.classList.contains('accent-btn')) {
         document.querySelectorAll('.accent-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         selectedAccent = e.target.dataset.accent;
+        
+        // Reload patterns when accent changes
+        const currentPattern = document.getElementById('pattern-select').value;
+        if (currentPattern) {
+            loadPatterns();
+            // Restore pattern selection after reload
+            setTimeout(() => {
+                document.getElementById('pattern-select').value = currentPattern;
+                document.getElementById('pattern-select').dispatchEvent(new Event('change'));
+            }, 100);
+        }
     }
 });
 
@@ -35,19 +61,26 @@ document.getElementById('model-select').addEventListener('change', (e) => {
 
 let selectedWord = '';
 
-// Load patterns on page load
+// Load patterns based on user mode and accent
 async function loadPatterns() {
     try {
-        const response = await fetch('/patterns');
+        const response = await fetch(`/patterns?user_mode=${selectedUserMode}&accent=${selectedAccent}`);
         const patterns = await response.json();
         const select = document.getElementById('pattern-select');
+        const currentValue = select.value;
         
+        select.innerHTML = '<option value="">Choose a pattern...</option>';
         patterns.forEach(pattern => {
             const opt = document.createElement('option');
             opt.value = pattern.id;
             opt.textContent = `Pattern ${pattern.id}: ${pattern.name} - ${pattern.description}`;
             select.appendChild(opt);
         });
+        
+        // Restore selection if it still exists
+        if (currentValue && patterns.some(p => p.id == currentValue)) {
+            select.value = currentValue;
+        }
     } catch (error) {
         console.error('Error loading patterns:', error);
     }
@@ -67,7 +100,7 @@ document.getElementById('pattern-select').addEventListener('change', async (e) =
     if (patternId) {
         // Load pattern words
         try {
-            const response = await fetch(`/pattern/${patternId}/words`);
+            const response = await fetch(`/pattern/${patternId}/words?user_mode=${selectedUserMode}&accent=${selectedAccent}`);
             if (response.ok) {
                 const data = await response.json();
                 
