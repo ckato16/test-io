@@ -36,7 +36,7 @@ document.querySelectorAll('.user-mode-btn').forEach(btn => {
 });
 
 // Accent selection (using event delegation)
-document.getElementById('accent-section').addEventListener('click', (e) => {
+document.getElementById('accent-section').addEventListener('click', async (e) => {
     if (e.target.classList.contains('accent-btn')) {
         document.querySelectorAll('.accent-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
@@ -44,12 +44,62 @@ document.getElementById('accent-section').addEventListener('click', (e) => {
         
         // Reload patterns when accent changes
         const currentPattern = document.getElementById('pattern-select').value;
+        const currentWord = selectedWord;
+        
         if (currentPattern) {
             loadPatterns();
-            // Restore pattern selection after reload
-            setTimeout(() => {
+            // Restore pattern selection and word after reload
+            setTimeout(async () => {
                 document.getElementById('pattern-select').value = currentPattern;
-                document.getElementById('pattern-select').dispatchEvent(new Event('change'));
+                
+                // Reload words for the pattern
+                try {
+                    const response = await fetch(`/pattern/${currentPattern}/words?user_mode=${selectedUserMode}&accent=${selectedAccent}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const exampleButtons = document.getElementById('example-buttons');
+                        const accentHeading = document.getElementById('accent-heading');
+                        const accentSection = document.getElementById('accent-section');
+                        const listenSection = document.getElementById('listen-section');
+                        
+                        // Show example heading and buttons
+                        document.getElementById('example-heading').style.display = 'block';
+                        exampleButtons.style.display = 'block';
+                        
+                        // Clear and populate example buttons
+                        exampleButtons.innerHTML = '';
+                        data.words.forEach(word => {
+                            const btn = document.createElement('button');
+                            btn.className = 'example-btn' + (word === currentWord ? ' selected' : '');
+                            btn.textContent = word;
+                            btn.dataset.word = word;
+                            btn.addEventListener('click', () => {
+                                document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('selected'));
+                                btn.classList.add('selected');
+                                selectedWord = word;
+                                accentHeading.style.display = 'block';
+                                accentSection.style.display = 'block';
+                                listenSection.style.display = 'block';
+                            });
+                            exampleButtons.appendChild(btn);
+                        });
+                        
+                        // Restore word selection if it exists in the new pattern
+                        if (currentWord && data.words.includes(currentWord)) {
+                            selectedWord = currentWord;
+                            accentHeading.style.display = 'block';
+                            accentSection.style.display = 'block';
+                            listenSection.style.display = 'block';
+                        } else {
+                            selectedWord = '';
+                            accentHeading.style.display = 'none';
+                            accentSection.style.display = 'none';
+                            listenSection.style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading pattern words:', error);
+                }
             }, 100);
         }
     }
