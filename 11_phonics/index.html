@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Phonics Trainer</title>
+
+<style>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 20px;
+  }
+  h2 {
+    margin-bottom: 10px;
+  }
+  select {
+    margin-right: 12px;
+    padding: 4px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background: #f4f4f4;
+  }
+  button {
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>Phonics Trainer</h2>
+
+<!-- Accent & Voice Selection -->
+<div>
+  <label>Accent:</label>
+  <select id="accentSelect">
+    <option value="en-GB">British</option>
+    <option value="en-US">American</option>
+    <option value="en-AU">Australian</option>
+    <option value="en-IE">Irish</option>
+    <option value="en-IN">Indian</option>
+    <option value="en-CA">Canadian</option>
+  </select>
+
+  <label>Voice:</label>
+  <select id="voiceSelect"></select>
+</div>
+
+<!-- Phonics Tables by Category -->
+<div id="phonicsContainer"></div>
+
+<script>
+/* ---------------- TTS SETUP ---------------- */
+let allVoices = [];
+let filteredVoices = [];
+let currentVoice = null;
+
+function loadVoices() {
+  allVoices = speechSynthesis.getVoices();
+  updateVoices();
+}
+
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function updateVoices() {
+  const accent = document.getElementById("accentSelect").value;
+  const voiceSelect = document.getElementById("voiceSelect");
+
+  filteredVoices = allVoices.filter(v => v.lang === accent);
+
+  voiceSelect.innerHTML = filteredVoices.map(
+    (v, i) => `<option value="${i}">${v.name}</option>`
+  ).join("");
+
+  currentVoice = filteredVoices[0] || null;
+}
+
+document.getElementById("accentSelect").onchange = () => {
+  updateVoices();
+  rebuildTables();
+};
+document.getElementById("voiceSelect").onchange = e => {
+  currentVoice = filteredVoices[e.target.value];
+};
+
+function speak(text, rate = 0.8) {
+  if (!currentVoice) return;
+
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice = currentVoice;
+  utterance.lang = currentVoice.lang;
+  utterance.rate = rate;
+  speechSynthesis.speak(utterance);
+}
+
+function getFakeForAccent(fakeData, accent) {
+  if (typeof fakeData === 'object' && fakeData !== null) {
+    return fakeData[accent] || fakeData['en-US'] || Object.values(fakeData)[0];
+  }
+  return fakeData;
+}
+
+function getIpaForAccent(ipaData, accent) {
+  if (typeof ipaData === 'object' && ipaData !== null) {
+    return ipaData[accent] || ipaData['en-US'] || Object.values(ipaData)[0];
+  }
+  return ipaData;
+}
+
+function getesForAccent(esData, accent) {
+  if (typeof esData === 'object' && esData !== null) {
+    return esData[accent] || esData['en-US'] || Object.values(esData)[0];
+  }
+  return esData;
+}
+
+/* ---------------- PHONICS DATA WITH CATEGORIES ---------------- */
+const phonicsContent = {
+  "Basic": {
+    "Single Consonants": [
+    { sound:"b", ipa:"/b/", es:"b", fake:"buh", words:["bat","ball","cab"] },
+    { sound:"c", ipa:"/k/", es:"k", fake:"kuh", words:["cat","cup","can"] },
+    { sound:"d", ipa:"/d/", es:"d", fake:"duh", words:["dog","red","hand"] },
+    { sound:"f", ipa:"/f/", es:"f", fake:"fff", words:["fish","fun","leaf"] },
+    { sound:"g", ipa:"/ɡ/", es:"g", fake:"guh", words:["go","big","bag"] },
+    { sound:"h", ipa:"/h/", es:"h", fake:"hhh", words:["hat","hot","hen"] },
+    { sound:"j", ipa:"/dʒ/", es:"dZ", fake:"juh", words:["jam","jet","jar"] },
+    { sound:"k", ipa:"/k/", es:"k", fake:"kuh", words:["kite","key","book"] },
+    { sound:"l", ipa:"/l/", es:"l", fake:"lll", words:["lip","leg","ball"] },
+    { sound:"m", ipa:"/m/", es:"m", fake:"mmm", words:["man","mum","moon"] },
+    { sound:"n", ipa:"/n/", es:"n", fake:"nnn", words:["net","sun","pen"] },
+    { sound:"p", ipa:"/p/", es:"p", fake:"puh", words:["pen","cap","pig"] },
+    { sound:"r", ipa:{ "en-GB":"/ɑː/", "en-US":"/ɹ/", "en-AU":"/ɑː/", "en-IE":"/ɑː/", "en-IN":"/ɹ/", "en-CA":"/ɹ/" }, es:{ "en-GB":"A:", "en-US":"r", "en-AU":"A:", "en-IE":"A:", "en-IN":"r", "en-CA":"r" }, fake:{ "en-GB":"ah", "en-US":"rrr", "en-AU":"ah", "en-IE":"ah", "en-IN":"rrr", "en-CA":"rrr" }, words:["red","run","car"] },
+    { sound:"s", ipa:"/s/", es:"s", fake:"sss", words:["sun","sock","bus"] },
+    { sound:"t", ipa:"/t/", es:"t", fake:"tuh", words:["top","cat","ten"] },
+    { sound:"v", ipa:"/v/", es:"v", fake:"vvv", words:["van","vet","five"] },
+    { sound:"w", ipa:"/w/", es:"w", fake:"wuh", words:["wet","win","cow"] },
+    { sound:"x", ipa:"/ks/", es:"ks", fake:"ks",  words:["box","fox","six"] },
+    { sound:"y", ipa:"/j/", es:"j", fake:"yuh", words:["yes","yellow","yum"] },
+    { sound:"z", ipa:"/z/", es:"z", fake:"zzz", words:["zip","zoo","buzz"] }
+  ],
+  "Consonant Digraphs": [
+    { sound: "ch", ipa:"/tʃ/", es:"tS", fake: "chuh", words: ["chip","chair","lunch"] },
+    { sound: "ck", ipa:"/k/", es:"k", fake: "kuh",  words: ["duck","clock","sock"] },
+    { sound: "ng", ipa:"/ŋ/", es:"N", fake: "nggg", words: ["ring","sing","long"] },
+    { sound: "nk", ipa:"/ŋk/", es:"Nk", fake: "ngk",  words: ["bank","sink","think"] },
+    { sound: "qu", ipa:"/kw/", es:"kw", fake: "kwuh", words: ["queen","quick","quiz"] },
+    { sound: "sh", ipa:"/ʃ/", es:"S", fake: "shhh", words: ["ship","fish","shop"] },
+    { sound: "th", ipa:"/θ/ /ð/", es:"T @", fake: "thhh", words: ["thin","this","bath"] }
+  ],
+  "Single Vowels": [
+    { sound:"a", ipa:"/æ/", es:"a", fake:"ah", words:["ant","apple","cat"] },
+    { sound:"e", ipa:"/ɛ/", es:"E", fake:"eh", words:["egg","bed","pen"] },
+    { sound:"i", ipa:"/ɪ/", es:"I", fake:"ih", words:["in","sit","pig"] },
+    { sound:"o", ipa:"/ɒ/", es:"O", fake:"oh", words:["on","hot","dog"] },
+    { sound:"u", ipa:"/ʌ/", es:"U", fake:"uh", words:["up","sun","cup"] }
+  ],
+  "Vowel Digraphs": [
+    { sound:"ai", ipa:"/eɪ/", es:"eI", fake:"ayyy",  words:["snail","rain","train"] },
+    { sound:"au", ipa:"/ɔː/", es:"O:", fake:"aw", words:["haul","cause","pause"] },
+    { sound:"aw", ipa:{ "en-GB":"/ɔː/", "en-US":"/ɔ/", "en-AU":"/ɔː/", "en-IE":"/ɔː/", "en-IN":"/ɔ/", "en-CA":"/ɔ/" }, es:{ "en-GB":"O:", "en-US":"O", "en-AU":"O:", "en-IE":"O:", "en-IN":"O", "en-CA":"O" }, fake:{ "en-GB":"aw", "en-US":"aww", "en-AU":"aw", "en-IE":"aw", "en-IN":"aww", "en-CA":"aww" }, words:["yawn","paw","claw"] },
+    { sound:"ay", ipa:"/eɪ/", es:"eI", fake:"ayyy", words:["day","play","stay"] },
+    { sound:"ea", ipa:"/iː/", es:"i:", fake:"eeee", words:["tea","meat","seat"] },
+    { sound:"ea", ipa:"/ɛ/", es:"E", fake:"eh", words:["bread","weather","head"] },
+    { sound:"ee", ipa:"/iː/", es:"i:", fake:"eeee", words:["see","tree","green"] },
+    { sound:"ew", ipa:"/uː/", es:"u:", fake:"yooo", words:["chew","few","new"] },
+    { sound:"ie", ipa:"/aɪ/", es:"aI", fake:"eye", words:["tie","pie","die"] },
+    { sound:"oa", ipa:"/əʊ/", es:"@U", fake:"ohhh", words:["goat","road","boat"] },
+    { sound:"oi", ipa:"/ɔɪ/", es:"OI", fake:"oyy", words:["spoil","coin","noise"] },
+    { sound:"oo", ipa:"/uː/", es:"u:", fake:"oooo", words:["zoo","moon","food"] },
+    { sound:"oo", ipa:"/ʊ/", es:"U", fake:{ "en-GB":"uh", "en-US":"uh", "en-AU":"uh", "en-IE":"uh", "en-IN":"uh", "en-CA":"uh" }, words:["book","look","foot"] },
+    { sound:"ou", ipa:"/aʊ/", es:"aU", fake:"oww", words:["out","shout","cloud"] },
+    { sound:"ow", ipa:{ "en-GB":"/əʊ/", "en-US":"/aʊ/", "en-AU":"/əʊ/", "en-IE":"/əʊ/", "en-IN":"/aʊ/", "en-CA":"/aʊ/" }, es:{ "en-GB":"@U", "en-US":"aU", "en-AU":"@U", "en-IE":"@U", "en-IN":"aU", "en-CA":"aU" }, fake:{ "en-GB":"oh", "en-US":"oww", "en-AU":"oh", "en-IE":"oh", "en-IN":"oww", "en-CA":"oww" }, words:["brown","cow","down"] },
+    { sound:"oy", ipa:"/ɔɪ/", es:"OI", fake:"oyy", words:["boy","toy","coin"] }
+  ],
+  "Trigraphs": [
+    { sound:"igh", ipa:"/aɪ/", es:"aI", fake:"eye", words:["high","night","light"] }
+  ],
+  "R-controlled Vowels": [
+    { sound:"air", ipa:{ "en-GB":"/ɛə/", "en-US":"/ɛɹ/", "en-AU":"/ɛə/", "en-IE":"/ɛə/", "en-IN":"/ɛɹ/", "en-CA":"/ɛɹ/" }, es:{ "en-GB":"e@", "en-US":"e r", "en-AU":"e@", "en-IE":"e@", "en-IN":"e r", "en-CA":"e r" }, fake:{ "en-GB":"eh", "en-US":"air", "en-AU":"eh", "en-IE":"eh", "en-IN":"air", "en-CA":"air" }, words:["hair","fair","chair"] },
+    { sound:"ar",  ipa:{ "en-GB":"/ɑː/", "en-US":"/ɑɹ/", "en-AU":"/ɑː/", "en-IE":"/ɑː/", "en-IN":"/ɑɹ/", "en-CA":"/ɑɹ/" }, es:{ "en-GB":"A:", "en-US":"A r", "en-AU":"A:", "en-IE":"A:", "en-IN":"A r", "en-CA":"A r" }, fake:{ "en-GB":"ah", "en-US":"arrr", "en-AU":"ah", "en-IE":"ah", "en-IN":"arrr", "en-CA":"arrr" }, words:["car","star","farm"] },
+    { sound:"are", ipa:{ "en-GB":"/ɛə/", "en-US":"/ɛɹ/", "en-AU":"/ɛə/", "en-IE":"/ɛə/", "en-IN":"/ɛɹ/", "en-CA":"/ɛɹ/" }, es:{ "en-GB":"e@", "en-US":"e r", "en-AU":"e@", "en-IE":"e@", "en-IN":"e r", "en-CA":"e r" }, fake:{ "en-GB":"eh", "en-US":"air", "en-AU":"eh", "en-IE":"eh", "en-IN":"air", "en-CA":"air" }, words:["care","share","bare"] },
+    { sound:"ear", ipa:{ "en-GB":"/ɪə/", "en-US":"/ɪɹ/", "en-AU":"/ɪə/", "en-IE":"/ɪə/", "en-IN":"/ɪɹ/", "en-CA":"/ɪɹ/" }, es:{ "en-GB":"i@", "en-US":"i r", "en-AU":"i@", "en-IE":"i@", "en-IN":"i r", "en-CA":"i r" }, fake:{ "en-GB":"eer", "en-US":"eer", "en-AU":"eer", "en-IE":"eer", "en-IN":"eer", "en-CA":"eer" }, words:["hear","near","dear"] },
+    { sound:"er", ipa:{ "en-GB":"/ə/", "en-US":"/ɹ/", "en-AU":"/ə/", "en-IE":"/ə/", "en-IN":"/ɹ/", "en-CA":"/ɹ/" }, es:{ "en-GB":"@", "en-US":"r", "en-AU":"@", "en-IE":"@", "en-IN":"r", "en-CA":"r" }, fake:{ "en-GB":"uh", "en-US":"err", "en-AU":"uh", "en-IE":"uh", "en-IN":"err", "en-CA":"err" }, words:["letter","better","summer"] },
+    { sound:"ir", ipa:{ "en-GB":"/ɜː/", "en-US":"/ɜɹ/", "en-AU":"/ɜː/", "en-IE":"/ɜː/", "en-IN":"/ɜɹ/", "en-CA":"/ɜɹ/" }, es:{ "en-GB":"3:", "en-US":"3 r", "en-AU":"3:", "en-IE":"3:", "en-IN":"3 r", "en-CA":"3 r" }, fake:{ "en-GB":"uh", "en-US":"err", "en-AU":"uh", "en-IE":"uh", "en-IN":"err", "en-CA":"err" }, words:["bird","girl","shirt"] },
+    { sound:"ire", ipa:{ "en-GB":"/aɪə/", "en-US":"/aɪɹ/", "en-AU":"/aɪə/", "en-IE":"/aɪə/", "en-IN":"/aɪɹ/", "en-CA":"/aɪɹ/" }, es:{ "en-GB":"aI@", "en-US":"aI r", "en-AU":"aI@", "en-IE":"aI@", "en-IN":"aI r", "en-CA":"aI r" }, fake:{ "en-GB":"eye-uh", "en-US":"eye-er", "en-AU":"eye-uh", "en-IE":"eye-uh", "en-IN":"eye-er", "en-CA":"eye-er" }, words:["fire","wire","tire"] },
+    { sound:"or", ipa:{ "en-GB":"/ɔː/", "en-US":"/ɔɹ/", "en-AU":"/ɔː/", "en-IE":"/ɔː/", "en-IN":"/ɔɹ/", "en-CA":"/ɔɹ/" }, es:{ "en-GB":"O:", "en-US":"O r", "en-AU":"O:", "en-IE":"O:", "en-IN":"O r", "en-CA":"O r" }, fake:{ "en-GB":"aw", "en-US":"or", "en-AU":"aw", "en-IE":"aw", "en-IN":"or", "en-CA":"or" }, words:["fork","corn","short"] },
+    { sound:"ur", ipa:{ "en-GB":"/ɜː/", "en-US":"/ɜɹ/", "en-AU":"/ɜː/", "en-IE":"/ɜː/", "en-IN":"/ɜɹ/", "en-CA":"/ɜɹ/" }, es:{ "en-GB":"3:", "en-US":"3 r", "en-AU":"3:", "en-IE":"3:", "en-IN":"3 r", "en-CA":"3 r" }, fake:{ "en-GB":"uh", "en-US":"err", "en-AU":"uh", "en-IE":"uh", "en-IN":"err", "en-CA":"err" }, words:["nurse","turn","hurt"] },
+    { sound:"ure", ipa:{ "en-GB":"/ɔə/", "en-US":"/ɔɹ/", "en-AU":"/ɔə/", "en-IE":"/ɔə/", "en-IN":"/ɔɹ/", "en-CA":"/ɔɹ/" }, es:{ "en-GB":"O@", "en-US":"O r", "en-AU":"O@", "en-IE":"O@", "en-IN":"O r", "en-CA":"O r" }, fake:{ "en-GB":"yuh", "en-US":"yerr", "en-AU":"yuh", "en-IE":"yuh", "en-IN":"yerr", "en-CA":"yerr" }, words:["pure","cure","sure"] }
+  ],
+  "Silent E Patterns": [
+    { sound:"a_e", ipa:"/eɪ/", es:"eI", fake:"ayyy", words:["cake","name","gate"] },
+    { sound:"i_e", ipa:"/aɪ/", es:"aI", fake:"eye", words:["smile","time","bike"] },
+    { sound:"o_e", ipa:"/oʊ/", es:"oU", fake:"ohhh", words:["home","bone","rose"] },
+    { sound:"u_e", ipa:"/uː/", es:"u:", fake:"yooo", words:["huge","cube","tune"] }
+  ]
+  },
+  "Advanced": {
+    "Soft C & G": [
+      { sound:"c", ipa:"/s/", es:"s", fake:"sss", words:["city","cent","circle"] },
+      { sound:"g", ipa:"/dʒ/", es:"dZ", fake:"juh", words:["gym","gem","giant"] }
+    ],
+    "Y as Vowel": [
+      { sound:"y", ipa:"/aɪ/", es:"aI", fake:"eye", words:["my","cry","sky"] },
+      { sound:"y", ipa:"/ɪ/", es:"I", fake:"ih", words:["happy","baby","lady"] }
+    ],
+    "Silent Letters": [
+      { sound:"gn", ipa:"/n/", es:"n", fake:"nnn", words:["gnat","gnome","sign"] },
+      { sound:"kn", ipa:"/n/", es:"n", fake:"nnn", words:["knee","know","knife"] },
+      { sound:"ph", ipa:"/f/", es:"f", fake:"fff", words:["phone","photo","graph"] },
+      { sound:"wr", ipa:"/r/", es:"r", fake:"rrr", words:["write","wrong","wrap"] }
+    ],
+    "Quadgraphs": [
+      { sound:"augh", ipa:"/ɔ/", es:"O", fake:"aw", words:["caught","taught","daughter"] },
+      { sound:"eigh", ipa:"/eɪ/", es:"eI", fake:"ayyy", words:["eight","weight","neighbor"] },
+      { sound:"ough", ipa:"/ʌ/", es:"U", fake:"uh", words:["tough","rough","enough"] },
+      { sound:"ough", ipa:"/uː/", es:"u:", fake:"oo", words:["through","who"] },
+      { sound:"ough", ipa:"/oʊ/", es:"oU", fake:"oh", words:["though","dough","although"] },
+      { sound:"ough", ipa:"/aʊ/", es:"aU", fake:"ow", words:["bough","plough"] }
+    ]
+  }
+};
+
+/* ---------------- BUILD CATEGORIZED TABLES ---------------- */
+const container = document.getElementById("phonicsContainer");
+
+function rebuildTables() {
+  container.innerHTML = ''; // Clear existing tables
+  
+  Object.entries(phonicsContent).forEach(([section, categories]) => {
+    // Create section heading
+    const sectionHeading = document.createElement("h2");
+    sectionHeading.textContent = section;
+    sectionHeading.style.marginTop = "2rem";
+    container.appendChild(sectionHeading);
+    
+    Object.entries(categories).forEach(([category, sounds]) => {
+      // Create category heading
+      const heading = document.createElement("h3");
+      heading.textContent = category;
+      container.appendChild(heading);
+
+      // Create table
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const tbody = document.createElement("tbody");
+
+      thead.innerHTML = `
+        <tr>
+          <th>Spell</th>
+          <th>IPA</th>
+          <th>eSpk</th>
+          <th>Ref</th>
+          <th>Ex1</th>
+          <th>Ex2</th>
+          <th>Ex3</th>
+        </tr>
+      `;
+
+      sounds.forEach(p => {
+        const tr = document.createElement("tr");
+        const currentAccent = document.getElementById("accentSelect").value;
+        const fakeText = getFakeForAccent(p.fake, currentAccent);
+        const ipaText = getIpaForAccent(p.ipa, currentAccent);
+        const esText = getesForAccent(p.es, currentAccent);
+        const examples = p.words.map(
+          w => `<td><button onclick="speak('${w}')">${w}</button></td>`
+        ).join("");
+
+        tr.innerHTML = `
+          <td><strong>${p.sound}</strong></td>
+          <td>${ipaText}</td>
+          <td>${esText}</td>
+          <td><button onclick="speak('${fakeText}')">${fakeText}</button></td>
+          ${examples}
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      container.appendChild(table);
+    });
+  });
+}
+
+// Initial build
+rebuildTables();
+</script>
+
+</body>
+</html>
