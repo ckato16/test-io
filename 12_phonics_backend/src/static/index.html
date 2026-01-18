@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Pronunciation Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>English Pronunciation Trainer</h1>
+
+        <h2>Select User Mode</h2>
+        <button id="native-button" class="user-mode-btn active" data-mode="Native">Native</button>
+        <button id="japanese-button" class="user-mode-btn" data-mode="Japanese">Japanese</button>
+        <button id="french-button" class="user-mode-btn" data-mode="French">French</button>
+
+        <h2>Select Pattern</h2>
+        <select id="pattern-select">
+            <option value="">Choose a pattern...</option>
+        </select>
+        
+        <h2 id="example-heading" style="display: none; margin-top: 20px;">Select Example</h2>
+        <div id="example-buttons" style="display: none; margin-top: 10px; margin-bottom: 20px;"></div>
+        
+        <h2 id="accent-heading" style="display: none; margin-top: 20px;">Select Accent</h2>
+        <div id="accent-section" style="display: none;">
+            <button id="american-button" class="accent-btn active" data-accent="American">American</button>
+            <button id="british-button" class="accent-btn" data-accent="British">British</button>
+        </div>
+        
+        <div id="listen-section" style="margin-top: 15px; display: none;">
+            <button id="listen-button" class="listen-btn">🔊 Listen to Pronunciation</button>
+        </div>
+
+        <h2>Select Model</h2>
+        <select id="model-select">
+            <option value="">Loading models...</option>
+        </select>
+
+        <h2>Record Your Pronunciation</h2>
+        <button id="record-button">Start Recording</button>
+        <button id="stop-button" disabled>Stop Recording</button>
+        
+        <div id="analyzing-status" style="display: none; margin-top: 10px; color: #FF9800; font-weight: bold;"></div>
+        
+        <div id="result"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
