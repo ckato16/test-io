@@ -1,8 +1,13 @@
 let mediaRecorder;
 let audioChunks = [];
-let selectedAccent = 'American';
+let selectedAccent = 'en-US';
 let selectedModel = '';
-let selectedUserMode = 'Native';
+let selectedLevel = '';
+let selectedCategory = '';
+let selectedSoundId = null;
+let selectedSound = null;
+let selectedWord = '';
+let referenceEspeak = '';
 
 // Load available models
 async function loadModels() {
@@ -21,208 +26,168 @@ async function loadModels() {
 
 loadModels();
 
-// User mode selection
-document.querySelectorAll('.user-mode-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.user-mode-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        selectedUserMode = e.target.dataset.mode;
-        
-        // Reset pattern selection and reload patterns
-        document.getElementById('pattern-select').value = '';
-        document.getElementById('pattern-select').dispatchEvent(new Event('change'));
-        loadPatterns();
+// Load levels
+async function loadLevels() {
+    const response = await fetch('/levels');
+    const levels = await response.json();
+    const select = document.getElementById('level-select');
+    select.innerHTML = '<option value="">Choose a level...</option>';
+    levels.forEach(level => {
+        const opt = document.createElement('option');
+        opt.value = level;
+        opt.textContent = level;
+        select.appendChild(opt);
     });
-});
+}
 
-// Accent selection (using event delegation)
-document.getElementById('accent-section').addEventListener('click', async (e) => {
-    if (e.target.classList.contains('accent-btn')) {
-        document.querySelectorAll('.accent-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        selectedAccent = e.target.dataset.accent;
-        
-        // Reload patterns when accent changes
-        const currentPattern = document.getElementById('pattern-select').value;
-        const currentWord = selectedWord;
-        
-        if (currentPattern) {
-            loadPatterns();
-            // Restore pattern selection and word after reload
-            setTimeout(async () => {
-                document.getElementById('pattern-select').value = currentPattern;
-                
-                // Reload words for the pattern
-                try {
-                    const response = await fetch(`/pattern/${currentPattern}/words?user_mode=${selectedUserMode}&accent=${selectedAccent}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        const exampleButtons = document.getElementById('example-buttons');
-                        const accentHeading = document.getElementById('accent-heading');
-                        const accentSection = document.getElementById('accent-section');
-                        const listenSection = document.getElementById('listen-section');
-                        
-                        // Show example heading and buttons
-                        document.getElementById('example-heading').style.display = 'block';
-                        exampleButtons.style.display = 'block';
-                        
-                        // Clear and populate example buttons
-                        exampleButtons.innerHTML = '';
-                        data.words.forEach(word => {
-                            const btn = document.createElement('button');
-                            btn.className = 'example-btn' + (word === currentWord ? ' selected' : '');
-                            btn.textContent = word;
-                            btn.dataset.word = word;
-                            btn.addEventListener('click', () => {
-                                document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('selected'));
-                                btn.classList.add('selected');
-                                selectedWord = word;
-                                accentHeading.style.display = 'block';
-                                accentSection.style.display = 'block';
-                                listenSection.style.display = 'block';
-                            });
-                            exampleButtons.appendChild(btn);
-                        });
-                        
-                        // Restore word selection if it exists in the new pattern
-                        if (currentWord && data.words.includes(currentWord)) {
-                            selectedWord = currentWord;
-                            accentHeading.style.display = 'block';
-                            accentSection.style.display = 'block';
-                            listenSection.style.display = 'block';
-                        } else {
-                            selectedWord = '';
-                            accentHeading.style.display = 'none';
-                            accentSection.style.display = 'none';
-                            listenSection.style.display = 'none';
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error loading pattern words:', error);
-                }
-            }, 100);
-        }
+loadLevels();
+
+// Level selection
+document.getElementById('level-select').addEventListener('change', async (e) => {
+    selectedLevel = e.target.value;
+    if (selectedLevel) {
+        await loadCategories();
+        document.getElementById('category-heading').style.display = 'block';
+        document.getElementById('category-select').style.display = 'block';
+    } else {
+        hideAllBelow('category-heading');
     }
 });
+
+// Load categories
+async function loadCategories() {
+    if (!selectedLevel) return;
+    const response = await fetch(`/categories?level=${selectedLevel}`);
+    const categories = await response.json();
+    const select = document.getElementById('category-select');
+    select.innerHTML = '<option value="">Choose a category...</option>';
+    categories.forEach(category => {
+        const opt = document.createElement('option');
+        opt.value = category;
+        opt.textContent = category;
+        select.appendChild(opt);
+    });
+}
+
+// Category selection
+document.getElementById('category-select').addEventListener('change', async (e) => {
+    selectedCategory = e.target.value;
+    if (selectedCategory) {
+        await loadSounds();
+        document.getElementById('sound-heading').style.display = 'block';
+        document.getElementById('sound-select').style.display = 'block';
+    } else {
+        hideAllBelow('sound-heading');
+    }
+});
+
+// Load sounds
+async function loadSounds() {
+    if (!selectedLevel || !selectedCategory) return;
+    const response = await fetch(`/sounds?level=${selectedLevel}&category=${selectedCategory}`);
+    const sounds = await response.json();
+    const select = document.getElementById('sound-select');
+    select.innerHTML = '<option value="">Choose a sound...</option>';
+    sounds.forEach(sound => {
+        const opt = document.createElement('option');
+        opt.value = sound.id;
+        opt.textContent = `${sound.sound} (${sound.ipa}) [${sound.es}]`;
+        select.appendChild(opt);
+    });
+}
+
+// Sound selection
+document.getElementById('sound-select').addEventListener('change', async (e) => {
+    selectedSoundId = e.target.value ? parseInt(e.target.value) : null;
+    if (selectedSoundId !== null) {
+        await loadWords();
+        document.getElementById('word-heading').style.display = 'block';
+        document.getElementById('word-buttons').style.display = 'block';
+    } else {
+        hideAllBelow('word-heading');
+    }
+});
+
+// Load words
+async function loadWords() {
+    if (selectedSoundId === null) return;
+    const response = await fetch(`/sound/${selectedSoundId}/words?level=${selectedLevel}&category=${selectedCategory}&accent=${selectedAccent}`);
+    const data = await response.json();
+    selectedSound = data.sound;
+    referenceEspeak = data.reference_es;
+    
+    const wordButtons = document.getElementById('word-buttons');
+    wordButtons.innerHTML = '';
+    
+    data.words.forEach(word => {
+        const btn = document.createElement('button');
+        btn.className = 'example-btn';
+        btn.textContent = word;
+        btn.dataset.word = word;
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedWord = word;
+            document.getElementById('accent-heading').style.display = 'block';
+            document.getElementById('accent-section').style.display = 'block';
+            document.getElementById('listen-section').style.display = 'block';
+        });
+        wordButtons.appendChild(btn);
+    });
+}
+
+// Accent selection
+document.getElementById('accent-select').addEventListener('change', async (e) => {
+    selectedAccent = e.target.value;
+    if (selectedSoundId !== null) {
+        await loadWords();
+    }
+});
+
+// Hide all elements below a certain point
+function hideAllBelow(elementId) {
+    const elements = ['category-heading', 'category-select', 'sound-heading', 'sound-select', 
+                     'word-heading', 'word-buttons', 'accent-heading', 'accent-section', 'listen-section'];
+    const startIndex = elements.indexOf(elementId);
+    for (let i = startIndex; i < elements.length; i++) {
+        document.getElementById(elements[i]).style.display = 'none';
+    }
+    selectedWord = '';
+}
 
 document.getElementById('model-select').addEventListener('change', (e) => {
     selectedModel = e.target.value;
 });
 
-let selectedWord = '';
-
-// Load patterns based on user mode and accent
-async function loadPatterns() {
-    try {
-        const response = await fetch(`/patterns?user_mode=${selectedUserMode}&accent=${selectedAccent}`);
-        const patterns = await response.json();
-        const select = document.getElementById('pattern-select');
-        const currentValue = select.value;
-        
-        select.innerHTML = '<option value="">Choose a pattern...</option>';
-        patterns.forEach(pattern => {
-            const opt = document.createElement('option');
-            opt.value = pattern.id;
-            opt.textContent = `Pattern ${pattern.id}: ${pattern.name} - ${pattern.description}`;
-            select.appendChild(opt);
-        });
-        
-        // Restore selection if it still exists
-        if (currentValue && patterns.some(p => p.id == currentValue)) {
-            select.value = currentValue;
-        }
-    } catch (error) {
-        console.error('Error loading patterns:', error);
-    }
-}
-
-loadPatterns();
-
-// Handle pattern selection
-document.getElementById('pattern-select').addEventListener('change', async (e) => {
-    const patternId = e.target.value;
-    const exampleHeading = document.getElementById('example-heading');
-    const exampleButtons = document.getElementById('example-buttons');
-    const accentHeading = document.getElementById('accent-heading');
-    const accentSection = document.getElementById('accent-section');
-    const listenSection = document.getElementById('listen-section');
-    
-    if (patternId) {
-        // Load pattern words
-        try {
-            const response = await fetch(`/pattern/${patternId}/words?user_mode=${selectedUserMode}&accent=${selectedAccent}`);
-            if (response.ok) {
-                const data = await response.json();
-                
-                // Show example heading and buttons
-                exampleHeading.style.display = 'block';
-                exampleButtons.style.display = 'block';
-                
-                // Clear and populate example buttons
-                exampleButtons.innerHTML = '';
-                data.words.forEach(word => {
-                    const btn = document.createElement('button');
-                    btn.className = 'example-btn';
-                    btn.textContent = word;
-                    btn.dataset.word = word;
-                    btn.addEventListener('click', () => {
-                        // Remove selected class from all buttons
-                        document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('selected'));
-                        // Add selected class to clicked button
-                        btn.classList.add('selected');
-                        selectedWord = word;
-                        
-                        // Show accent selection and listen button
-                        accentHeading.style.display = 'block';
-                        accentSection.style.display = 'block';
-                        listenSection.style.display = 'block';
-                    });
-                    exampleButtons.appendChild(btn);
-                });
-                
-                // Hide accent and listen sections until word is selected
-                accentHeading.style.display = 'none';
-                accentSection.style.display = 'none';
-                listenSection.style.display = 'none';
-                selectedWord = '';
-            }
-        } catch (error) {
-            console.error('Error loading pattern words:', error);
-        }
-    } else {
-        exampleHeading.style.display = 'none';
-        exampleButtons.style.display = 'none';
-        accentHeading.style.display = 'none';
-        accentSection.style.display = 'none';
-        listenSection.style.display = 'none';
-        selectedWord = '';
-    }
-});
-
-// Listen button functionality
+// Listen button - works for both sounds and words
 document.getElementById('listen-button').addEventListener('click', async () => {
     if (!selectedWord) {
-        alert('Select an example first');
+        alert('Select a word or sound first');
         return;
     }
     
     const button = document.getElementById('listen-button');
     const originalText = button.textContent;
-    
     button.disabled = true;
     button.textContent = '⏳ Generating...';
     
     try {
-        const response = await fetch('/tts', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                text: selectedWord,
-                accent: selectedAccent
-            })
-        });
+        let response;
+        // If selected word is the sound itself, use espeak phonemes
+        // Otherwise use regular TTS (which uses espeak-ng)
+        if (selectedWord === selectedSound && referenceEspeak) {
+            response = await fetch('/tts-espeak', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({espeak: referenceEspeak, accent: selectedAccent})
+            });
+        } else {
+            response = await fetch('/tts', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: selectedWord, accent: selectedAccent})
+            });
+        }
         
         if (!response.ok) {
             const error = await response.json();
@@ -256,7 +221,6 @@ document.getElementById('listen-button').addEventListener('click', async () => {
 document.getElementById('record-button').addEventListener('click', async () => {
     audioChunks = [];
     const analyzingStatus = document.getElementById('analyzing-status');
-    
     analyzingStatus.style.display = 'none';
     
     try {
@@ -281,14 +245,14 @@ document.getElementById('stop-button').addEventListener('click', () => {
 });
 
 function getScoreColor(score) {
-    if (score >= 80) return '#4CAF50';  // green
-    if (score >= 60) return '#FF9800';  // orange
-    return '#f44336';                   // red
+    if (score >= 80) return '#4CAF50';
+    if (score >= 60) return '#FF9800';
+    return '#f44336';
 }
 
 async function sendAudio() {
     if (!selectedWord) {
-        alert('Select an example first');
+        alert('Select a word first');
         return;
     }
     
@@ -319,7 +283,7 @@ async function sendAudio() {
                 <p>eSpeak: <code>${data.transcription}</code></p>
                 <p>IPA: <code>${data.detected_ipa}</code></p>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                <p><strong>Expected (${selectedAccent}):</strong></p>
+                <p><strong>Expected:</strong></p>
                 <p>eSpeak: <code>${data.expected_espeak}</code></p>
                 <p>IPA: <code>${data.expected_ipa}</code></p>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">

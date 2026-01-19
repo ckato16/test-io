@@ -3,34 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Pronunciation Trainer</title>
+    <title>Phonics Pronunciation Trainer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>English Pronunciation Trainer</h1>
+        <h1>Phonics Pronunciation Trainer</h1>
 
-        <h2>Select User Mode</h2>
-        <button id="native-button" class="user-mode-btn active" data-mode="Native">Native</button>
-        <button id="japanese-button" class="user-mode-btn" data-mode="Japanese">Japanese</button>
-        <button id="french-button" class="user-mode-btn" data-mode="French">French</button>
-
-        <h2>Select Pattern</h2>
-        <select id="pattern-select">
-            <option value="">Choose a pattern...</option>
+        <h2>Select Level</h2>
+        <select id="level-select">
+            <option value="">Choose a level...</option>
         </select>
-        
-        <h2 id="example-heading" style="display: none; margin-top: 20px;">Select Example</h2>
-        <div id="example-buttons" style="display: none; margin-top: 10px; margin-bottom: 20px;"></div>
-        
-        <h2 id="accent-heading" style="display: none; margin-top: 20px;">Select Accent</h2>
+
+        <h2 id="category-heading" style="display: none;">Select Category</h2>
+        <select id="category-select" style="display: none;">
+            <option value="">Choose a category...</option>
+        </select>
+
+        <h2 id="sound-heading" style="display: none;">Select Sound</h2>
+        <select id="sound-select" style="display: none;">
+            <option value="">Choose a sound...</option>
+        </select>
+
+        <h2 id="word-heading" style="display: none;">Select Word</h2>
+        <div id="word-buttons" style="display: none; margin-top: 10px; margin-bottom: 20px;"></div>
+
+        <h2 id="accent-heading" style="display: none;">Select Accent</h2>
         <div id="accent-section" style="display: none;">
-            <button id="american-button" class="accent-btn active" data-accent="American">American</button>
-            <button id="british-button" class="accent-btn" data-accent="British">British</button>
+            <select id="accent-select">
+                <option value="en-GB">British</option>
+                <option value="en-US">American</option>
+                <option value="en-AU">Australian</option>
+                <option value="en-IE">Irish</option>
+                <option value="en-IN">Indian</option>
+                <option value="en-CA">Canadian</option>
+            </select>
         </div>
-        
+
         <div id="listen-section" style="margin-top: 15px; display: none;">
-            <button id="listen-button" class="listen-btn">🔊 Listen to Pronunciation</button>
+            <button id="listen-button" class="listen-btn">🔊 Listen</button>
         </div>
 
         <h2>Select Model</h2>

@@ -5,6 +5,7 @@ from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from difflib import SequenceMatcher
 import subprocess
 import os
+import re
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -81,737 +82,129 @@ ESPEAK_TO_IPA = {
     "w": "w",
 }
 
-# Phoneme mappings with eSpeak and IPA
-# 10 vowel difference patterns, 10 examples each
-WORDS = {
-    # Pattern 1: /oʊ/ vs /əʊ/ (GOAT vowel)
-    "go": {
-        "American": {"espeak": "g @U", "ipa": "goʊ"},
-        "British": {"espeak": "g @U", "ipa": "gəʊ"}
-    },
-    "know": {
-        "American": {"espeak": "n @U", "ipa": "noʊ"},
-        "British": {"espeak": "n @U", "ipa": "nəʊ"}
-    },
-    "show": {
-        "American": {"espeak": "S @U", "ipa": "ʃoʊ"},
-        "British": {"espeak": "S @U", "ipa": "ʃəʊ"}
-    },
-    "home": {
-        "American": {"espeak": "h @U m", "ipa": "hoʊm"},
-        "British": {"espeak": "h @U m", "ipa": "həʊm"}
-    },
-    "boat": {
-        "American": {"espeak": "b @U t", "ipa": "boʊt"},
-        "British": {"espeak": "b @U t", "ipa": "bəʊt"}
-    },
-    "phone": {
-        "American": {"espeak": "f @U n", "ipa": "foʊn"},
-        "British": {"espeak": "f @U n", "ipa": "fəʊn"}
-    },
-    "road": {
-        "American": {"espeak": "r @U d", "ipa": "roʊd"},
-        "British": {"espeak": "r @U d", "ipa": "rəʊd"}
-    },
-    "coat": {
-        "American": {"espeak": "k @U t", "ipa": "koʊt"},
-        "British": {"espeak": "k @U t", "ipa": "kəʊt"}
-    },
-    "note": {
-        "American": {"espeak": "n @U t", "ipa": "noʊt"},
-        "British": {"espeak": "n @U t", "ipa": "nəʊt"}
-    },
-    "low": {
-        "American": {"espeak": "l @U", "ipa": "loʊ"},
-        "British": {"espeak": "l @U", "ipa": "ləʊ"}
-    },
-    # Pattern 2: /æ/ vs /ɑː/ (TRAP-BATH split)
-    "dance": {
-        "American": {"espeak": "d æ n s", "ipa": "dæns"},
-        "British": {"espeak": "d A: n s", "ipa": "dɑːns"}
-    },
-    "bath": {
-        "American": {"espeak": "b æ T", "ipa": "bæθ"},
-        "British": {"espeak": "b A: T", "ipa": "bɑːθ"}
-    },
-    "grass": {
-        "American": {"espeak": "g r æ s", "ipa": "ɡræs"},
-        "British": {"espeak": "g r A: s", "ipa": "ɡrɑːs"}
-    },
-    "class": {
-        "American": {"espeak": "k l æ s", "ipa": "klæs"},
-        "British": {"espeak": "k l A: s", "ipa": "klɑːs"}
-    },
-    "path": {
-        "American": {"espeak": "p æ T", "ipa": "pæθ"},
-        "British": {"espeak": "p A: T", "ipa": "pɑːθ"}
-    },
-    "fast": {
-        "American": {"espeak": "f æ s t", "ipa": "fæst"},
-        "British": {"espeak": "f A: s t", "ipa": "fɑːst"}
-    },
-    "ask": {
-        "American": {"espeak": "æ s k", "ipa": "æsk"},
-        "British": {"espeak": "A: s k", "ipa": "ɑːsk"}
-    },
-    "half": {
-        "American": {"espeak": "h æ f", "ipa": "hæf"},
-        "British": {"espeak": "h A: f", "ipa": "hɑːf"}
-    },
-    "laugh": {
-        "American": {"espeak": "l æ f", "ipa": "læf"},
-        "British": {"espeak": "l A: f", "ipa": "lɑːf"}
-    },
-    "after": {
-        "American": {"espeak": "æ f t @", "ipa": "ˈæftɚ"},
-        "British": {"espeak": "A: f t @", "ipa": "ˈɑːftə"}
-    },
-    # Pattern 3: /ɑr/ vs /ɑː/ (R-coloring)
-    "car": {
-        "American": {"espeak": "k A r", "ipa": "kɑr"},
-        "British": {"espeak": "k A:", "ipa": "kɑː"}
-    },
-    "far": {
-        "American": {"espeak": "f A r", "ipa": "fɑr"},
-        "British": {"espeak": "f A:", "ipa": "fɑː"}
-    },
-    "bar": {
-        "American": {"espeak": "b A r", "ipa": "bɑr"},
-        "British": {"espeak": "b A:", "ipa": "bɑː"}
-    },
-    "star": {
-        "American": {"espeak": "s t A r", "ipa": "stɑr"},
-        "British": {"espeak": "s t A:", "ipa": "stɑː"}
-    },
-    "hard": {
-        "American": {"espeak": "h A r d", "ipa": "hɑrd"},
-        "British": {"espeak": "h A: d", "ipa": "hɑːd"}
-    },
-    "card": {
-        "American": {"espeak": "k A r d", "ipa": "kɑrd"},
-        "British": {"espeak": "k A: d", "ipa": "kɑːd"}
-    },
-    "park": {
-        "American": {"espeak": "p A r k", "ipa": "pɑrk"},
-        "British": {"espeak": "p A: k", "ipa": "pɑːk"}
-    },
-    "dark": {
-        "American": {"espeak": "d A r k", "ipa": "dɑrk"},
-        "British": {"espeak": "d A: k", "ipa": "dɑːk"}
-    },
-    "arm": {
-        "American": {"espeak": "A r m", "ipa": "ɑrm"},
-        "British": {"espeak": "A: m", "ipa": "ɑːm"}
-    },
-    "art": {
-        "American": {"espeak": "A r t", "ipa": "ɑrt"},
-        "British": {"espeak": "A: t", "ipa": "ɑːt"}
-    },
-    # Pattern 4: /ɔr/ vs /ɔː/ (R-coloring)
-    "more": {
-        "American": {"espeak": "m O r", "ipa": "mɔr"},
-        "British": {"espeak": "m O:", "ipa": "mɔː"}
-    },
-    "door": {
-        "American": {"espeak": "d O r", "ipa": "dɔr"},
-        "British": {"espeak": "d O:", "ipa": "dɔː"}
-    },
-    "floor": {
-        "American": {"espeak": "f l O r", "ipa": "flɔr"},
-        "British": {"espeak": "f l O:", "ipa": "flɔː"}
-    },
-    "store": {
-        "American": {"espeak": "s t O r", "ipa": "stɔr"},
-        "British": {"espeak": "s t O:", "ipa": "stɔː"}
-    },
-    "four": {
-        "American": {"espeak": "f O r", "ipa": "fɔr"},
-        "British": {"espeak": "f O:", "ipa": "fɔː"}
-    },
-    "pour": {
-        "American": {"espeak": "p O r", "ipa": "pɔr"},
-        "British": {"espeak": "p O:", "ipa": "pɔː"}
-    },
-    "warm": {
-        "American": {"espeak": "w O r m", "ipa": "wɔrm"},
-        "British": {"espeak": "w O: m", "ipa": "wɔːm"}
-    },
-    "corn": {
-        "American": {"espeak": "k O r n", "ipa": "kɔrn"},
-        "British": {"espeak": "k O: n", "ipa": "kɔːn"}
-    },
-    "born": {
-        "American": {"espeak": "b O r n", "ipa": "bɔrn"},
-        "British": {"espeak": "b O: n", "ipa": "bɔːn"}
-    },
-    "worn": {
-        "American": {"espeak": "w O r n", "ipa": "wɔrn"},
-        "British": {"espeak": "w O: n", "ipa": "wɔːn"}
-    },
-    # Pattern 5: /ɑ/ vs /ɒ/ (LOT vowel)
-    "lot": {
-        "American": {"espeak": "l A t", "ipa": "lɑt"},
-        "British": {"espeak": "l O t", "ipa": "lɒt"}
-    },
-    "hot": {
-        "American": {"espeak": "h A t", "ipa": "hɑt"},
-        "British": {"espeak": "h O t", "ipa": "hɒt"}
-    },
-    "not": {
-        "American": {"espeak": "n A t", "ipa": "nɑt"},
-        "British": {"espeak": "n O t", "ipa": "nɒt"}
-    },
-    "pot": {
-        "American": {"espeak": "p A t", "ipa": "pɑt"},
-        "British": {"espeak": "p O t", "ipa": "pɒt"}
-    },
-    "got": {
-        "American": {"espeak": "g A t", "ipa": "ɡɑt"},
-        "British": {"espeak": "g O t", "ipa": "ɡɒt"}
-    },
-    "cot": {
-        "American": {"espeak": "k A t", "ipa": "kɑt"},
-        "British": {"espeak": "k O t", "ipa": "kɒt"}
-    },
-    "nod": {
-        "American": {"espeak": "n A d", "ipa": "nɑd"},
-        "British": {"espeak": "n O d", "ipa": "nɒd"}
-    },
-    "rob": {
-        "American": {"espeak": "r A b", "ipa": "rɑb"},
-        "British": {"espeak": "r O b", "ipa": "rɒb"}
-    },
-    "stop": {
-        "American": {"espeak": "s t A p", "ipa": "stɑp"},
-        "British": {"espeak": "s t O p", "ipa": "stɒp"}
-    },
-    "top": {
-        "American": {"espeak": "t A p", "ipa": "tɑp"},
-        "British": {"espeak": "t O p", "ipa": "tɒp"}
-    },
-    # Pattern 6: /ɔ/ vs /ɒ/ (CLOTH vowel)
-    "cloth": {
-        "American": {"espeak": "k l O T", "ipa": "klɔθ"},
-        "British": {"espeak": "k l O T", "ipa": "klɒθ"}
-    },
-    "off": {
-        "American": {"espeak": "O f", "ipa": "ɔf"},
-        "British": {"espeak": "O f", "ipa": "ɒf"}
-    },
-    "soft": {
-        "American": {"espeak": "s O f t", "ipa": "sɔft"},
-        "British": {"espeak": "s O f t", "ipa": "sɒft"}
-    },
-    "cross": {
-        "American": {"espeak": "k r O s", "ipa": "krɔs"},
-        "British": {"espeak": "k r O s", "ipa": "krɒs"}
-    },
-    "loss": {
-        "American": {"espeak": "l O s", "ipa": "lɔs"},
-        "British": {"espeak": "l O s", "ipa": "lɒs"}
-    },
-    "boss": {
-        "American": {"espeak": "b O s", "ipa": "bɔs"},
-        "British": {"espeak": "b O s", "ipa": "bɒs"}
-    },
-    "cost": {
-        "American": {"espeak": "k O s t", "ipa": "kɔst"},
-        "British": {"espeak": "k O s t", "ipa": "kɒst"}
-    },
-    "frost": {
-        "American": {"espeak": "f r O s t", "ipa": "frɔst"},
-        "British": {"espeak": "f r O s t", "ipa": "frɒst"}
-    },
-    "toss": {
-        "American": {"espeak": "t O s", "ipa": "tɔs"},
-        "British": {"espeak": "t O s", "ipa": "tɒs"}
-    },
-    "moss": {
-        "American": {"espeak": "m O s", "ipa": "mɔs"},
-        "British": {"espeak": "m O s", "ipa": "mɒs"}
-    },
-    # Pattern 7: /ɪr/ vs /ɪə/ (NEAR - R-coloring)
-    "near": {
-        "American": {"espeak": "n I r", "ipa": "nɪr"},
-        "British": {"espeak": "n I @", "ipa": "nɪə"}
-    },
-    "here": {
-        "American": {"espeak": "h I r", "ipa": "hɪr"},
-        "British": {"espeak": "h I @", "ipa": "hɪə"}
-    },
-    "fear": {
-        "American": {"espeak": "f I r", "ipa": "fɪr"},
-        "British": {"espeak": "f I @", "ipa": "fɪə"}
-    },
-    "clear": {
-        "American": {"espeak": "k l I r", "ipa": "klɪr"},
-        "British": {"espeak": "k l I @", "ipa": "klɪə"}
-    },
-    "year": {
-        "American": {"espeak": "j I r", "ipa": "jɪr"},
-        "British": {"espeak": "j I @", "ipa": "jɪə"}
-    },
-    "ear": {
-        "American": {"espeak": "I r", "ipa": "ɪr"},
-        "British": {"espeak": "I @", "ipa": "ɪə"}
-    },
-    "beer": {
-        "American": {"espeak": "b I r", "ipa": "bɪr"},
-        "British": {"espeak": "b I @", "ipa": "bɪə"}
-    },
-    "dear": {
-        "American": {"espeak": "d I r", "ipa": "dɪr"},
-        "British": {"espeak": "d I @", "ipa": "dɪə"}
-    },
-    "tear": {
-        "American": {"espeak": "t I r", "ipa": "tɪr"},
-        "British": {"espeak": "t I @", "ipa": "tɪə"}
-    },
-    "sheer": {
-        "American": {"espeak": "S I r", "ipa": "ʃɪr"},
-        "British": {"espeak": "S I @", "ipa": "ʃɪə"}
-    },
-    # Pattern 8: /ɛr/ vs /eə/ (SQUARE - R-coloring)
-    "air": {
-        "American": {"espeak": "E r", "ipa": "ɛr"},
-        "British": {"espeak": "e @", "ipa": "eə"}
-    },
-    "care": {
-        "American": {"espeak": "k E r", "ipa": "kɛr"},
-        "British": {"espeak": "k e @", "ipa": "keə"}
-    },
-    "share": {
-        "American": {"espeak": "S E r", "ipa": "ʃɛr"},
-        "British": {"espeak": "S e @", "ipa": "ʃeə"}
-    },
-    "where": {
-        "American": {"espeak": "w E r", "ipa": "wɛr"},
-        "British": {"espeak": "w e @", "ipa": "weə"}
-    },
-    "hair": {
-        "American": {"espeak": "h E r", "ipa": "hɛr"},
-        "British": {"espeak": "h e @", "ipa": "heə"}
-    },
-    "fair": {
-        "American": {"espeak": "f E r", "ipa": "fɛr"},
-        "British": {"espeak": "f e @", "ipa": "feə"}
-    },
-    "square": {
-        "American": {"espeak": "s k w E r", "ipa": "skwɛr"},
-        "British": {"espeak": "s k w e @", "ipa": "skweə"}
-    },
-    "stare": {
-        "American": {"espeak": "s t E r", "ipa": "stɛr"},
-        "British": {"espeak": "s t e @", "ipa": "steə"}
-    },
-    "rare": {
-        "American": {"espeak": "r E r", "ipa": "rɛr"},
-        "British": {"espeak": "r e @", "ipa": "reə"}
-    },
-    "bear": {
-        "American": {"espeak": "b E r", "ipa": "bɛr"},
-        "British": {"espeak": "b e @", "ipa": "beə"}
-    },
-    # Pattern 9: /ʊr/ vs /ʊə/ (CURE - R-coloring)
-    "tour": {
-        "American": {"espeak": "t U r", "ipa": "tʊr"},
-        "British": {"espeak": "t U @", "ipa": "tʊə"}
-    },
-    "poor": {
-        "American": {"espeak": "p U r", "ipa": "pʊr"},
-        "British": {"espeak": "p U @", "ipa": "pʊə"}
-    },
-    "sure": {
-        "American": {"espeak": "S U r", "ipa": "ʃʊr"},
-        "British": {"espeak": "S U @", "ipa": "ʃʊə"}
-    },
-    "cure": {
-        "American": {"espeak": "k j U r", "ipa": "kjʊr"},
-        "British": {"espeak": "k j U @", "ipa": "kjʊə"}
-    },
-    "pure": {
-        "American": {"espeak": "p j U r", "ipa": "pjʊr"},
-        "British": {"espeak": "p j U @", "ipa": "pjʊə"}
-    },
-    "lure": {
-        "American": {"espeak": "l U r", "ipa": "lʊr"},
-        "British": {"espeak": "l U @", "ipa": "lʊə"}
-    },
-    "endure": {
-        "American": {"espeak": "E n d j U r", "ipa": "ɛnˈdjʊr"},
-        "British": {"espeak": "E n d j U @", "ipa": "ɛnˈdjʊə"}
-    },
-    "mature": {
-        "American": {"espeak": "m @ tS U r", "ipa": "məˈtʃʊr"},
-        "British": {"espeak": "m @ tS U @", "ipa": "məˈtʃʊə"}
-    },
-    "secure": {
-        "American": {"espeak": "s I k j U r", "ipa": "sɪˈkjʊr"},
-        "British": {"espeak": "s I k j U @", "ipa": "sɪˈkjʊə"}
-    },
-    "obscure": {
-        "American": {"espeak": "@ b s k j U r", "ipa": "əbˈskjʊr"},
-        "British": {"espeak": "@ b s k j U @", "ipa": "əbˈskjʊə"}
-    },
-    # Pattern 10: /ɜr/ vs /ɜː/ (NURSE - R-coloring)
-    "nurse": {
-        "American": {"espeak": "n 3: r s", "ipa": "nɜrs"},
-        "British": {"espeak": "n 3: s", "ipa": "nɜːs"}
-    },
-    "bird": {
-        "American": {"espeak": "b 3: r d", "ipa": "bɜrd"},
-        "British": {"espeak": "b 3: d", "ipa": "bɜːd"}
-    },
-    "word": {
-        "American": {"espeak": "w 3: r d", "ipa": "wɜrd"},
-        "British": {"espeak": "w 3: d", "ipa": "wɜːd"}
-    },
-    "heard": {
-        "American": {"espeak": "h 3: r d", "ipa": "hɜrd"},
-        "British": {"espeak": "h 3: d", "ipa": "hɜːd"}
-    },
-    "turn": {
-        "American": {"espeak": "t 3: r n", "ipa": "tɜrn"},
-        "British": {"espeak": "t 3: n", "ipa": "tɜːn"}
-    },
-    "burn": {
-        "American": {"espeak": "b 3: r n", "ipa": "bɜrn"},
-        "British": {"espeak": "b 3: n", "ipa": "bɜːn"}
-    },
-    "curse": {
-        "American": {"espeak": "k 3: r s", "ipa": "kɜrs"},
-        "British": {"espeak": "k 3: s", "ipa": "kɜːs"}
-    },
-    "first": {
-        "American": {"espeak": "f 3: r s t", "ipa": "fɜrst"},
-        "British": {"espeak": "f 3: s t", "ipa": "fɜːst"}
-    },
-    "third": {
-        "American": {"espeak": "T 3: r d", "ipa": "θɜrd"},
-        "British": {"espeak": "T 3: d", "ipa": "θɜːd"}
-    },
-    "learn": {
-        "American": {"espeak": "l 3: r n", "ipa": "lɜrn"},
-        "British": {"espeak": "l 3: n", "ipa": "lɜːn"}
-    },
-    # Japanese patterns - American
-    "light": {"American": {"espeak": "l aI t", "ipa": "laɪt"}, "British": {"espeak": "l aI t", "ipa": "laɪt"}},
-    "right": {"American": {"espeak": "r aI t", "ipa": "raɪt"}, "British": {"espeak": "r aI t", "ipa": "raɪt"}},
-    "lead": {"American": {"espeak": "l i: d", "ipa": "liːd"}, "British": {"espeak": "l i: d", "ipa": "liːd"}},
-    "read": {"American": {"espeak": "r i: d", "ipa": "riːd"}, "British": {"espeak": "r i: d", "ipa": "riːd"}},
-    "long": {"American": {"espeak": "l O N", "ipa": "lɔŋ"}, "British": {"espeak": "l O N", "ipa": "lɒŋ"}},
-    "wrong": {"American": {"espeak": "r O N", "ipa": "rɔŋ"}, "British": {"espeak": "r O N", "ipa": "rɒŋ"}},
-    "play": {"American": {"espeak": "p l eI", "ipa": "pleɪ"}, "British": {"espeak": "p l eI", "ipa": "pleɪ"}},
-    "pray": {"American": {"espeak": "p r eI", "ipa": "preɪ"}, "British": {"espeak": "p r eI", "ipa": "preɪ"}},
-    "fly": {"American": {"espeak": "f l aI", "ipa": "flaɪ"}, "British": {"espeak": "f l aI", "ipa": "flaɪ"}},
-    "fry": {"American": {"espeak": "f r aI", "ipa": "fraɪ"}, "British": {"espeak": "f r aI", "ipa": "fraɪ"}},
-    "think": {"American": {"espeak": "T I N k", "ipa": "θɪŋk"}, "British": {"espeak": "T I N k", "ipa": "θɪŋk"}},
-    "sink": {"American": {"espeak": "s I N k", "ipa": "sɪŋk"}, "British": {"espeak": "s I N k", "ipa": "sɪŋk"}},
-    "thick": {"American": {"espeak": "T I k", "ipa": "θɪk"}, "British": {"espeak": "T I k", "ipa": "θɪk"}},
-    "sick": {"American": {"espeak": "s I k", "ipa": "sɪk"}, "British": {"espeak": "s I k", "ipa": "sɪk"}},
-    "thin": {"American": {"espeak": "T I n", "ipa": "θɪn"}, "British": {"espeak": "T I n", "ipa": "θɪn"}},
-    "sin": {"American": {"espeak": "s I n", "ipa": "sɪn"}, "British": {"espeak": "s I n", "ipa": "sɪn"}},
-    "thought": {"American": {"espeak": "T O t", "ipa": "θɔt"}, "British": {"espeak": "T O: t", "ipa": "θɔːt"}},
-    "sought": {"American": {"espeak": "s O t", "ipa": "sɔt"}, "British": {"espeak": "s O: t", "ipa": "sɔːt"}},
-    "three": {"American": {"espeak": "T r i:", "ipa": "θri"}, "British": {"espeak": "T r i:", "ipa": "θriː"}},
-    "tree": {"American": {"espeak": "t r i:", "ipa": "tri"}, "British": {"espeak": "t r i:", "ipa": "triː"}},
-    "very": {"American": {"espeak": "v E r i:", "ipa": "ˈvɛri"}, "British": {"espeak": "v E r i:", "ipa": "ˈvɛri"}},
-    "berry": {"American": {"espeak": "b E r i:", "ipa": "ˈbɛri"}, "British": {"espeak": "b E r i:", "ipa": "ˈbɛri"}},
-    "vote": {"American": {"espeak": "v @U t", "ipa": "voʊt"}, "British": {"espeak": "v @U t", "ipa": "vəʊt"}},
-    "boat": {"American": {"espeak": "b @U t", "ipa": "boʊt"}, "British": {"espeak": "b @U t", "ipa": "bəʊt"}},
-    "vest": {"American": {"espeak": "v E s t", "ipa": "vɛst"}, "British": {"espeak": "v E s t", "ipa": "vɛst"}},
-    "best": {"American": {"espeak": "b E s t", "ipa": "bɛst"}, "British": {"espeak": "b E s t", "ipa": "bɛst"}},
-    "vine": {"American": {"espeak": "v aI n", "ipa": "vaɪn"}, "British": {"espeak": "v aI n", "ipa": "vaɪn"}},
-    "bine": {"American": {"espeak": "b aI n", "ipa": "baɪn"}, "British": {"espeak": "b aI n", "ipa": "baɪn"}},
-    "veal": {"American": {"espeak": "v i: l", "ipa": "viːl"}, "British": {"espeak": "v i: l", "ipa": "viːl"}},
-    "beal": {"American": {"espeak": "b i: l", "ipa": "biːl"}, "British": {"espeak": "b i: l", "ipa": "biːl"}},
-    "cat": {"American": {"espeak": "k æ t", "ipa": "kæt"}, "British": {"espeak": "k æ t", "ipa": "kæt"}},
-    "cot": {"American": {"espeak": "k A t", "ipa": "kɑt"}, "British": {"espeak": "k O t", "ipa": "kɒt"}},
-    "hat": {"American": {"espeak": "h æ t", "ipa": "hæt"}, "British": {"espeak": "h æ t", "ipa": "hæt"}},
-    "hot": {"American": {"espeak": "h A t", "ipa": "hɑt"}, "British": {"espeak": "h O t", "ipa": "hɒt"}},
-    "bat": {"American": {"espeak": "b æ t", "ipa": "bæt"}, "British": {"espeak": "b æ t", "ipa": "bæt"}},
-    "bot": {"American": {"espeak": "b A t", "ipa": "bɑt"}, "British": {"espeak": "b O t", "ipa": "bɒt"}},
-    "sad": {"American": {"espeak": "s æ d", "ipa": "sæd"}, "British": {"espeak": "s æ d", "ipa": "sæd"}},
-    "sod": {"American": {"espeak": "s A d", "ipa": "sɑd"}, "British": {"espeak": "s O d", "ipa": "sɒd"}},
-    "bad": {"American": {"espeak": "b æ d", "ipa": "bæd"}, "British": {"espeak": "b æ d", "ipa": "bæd"}},
-    "bod": {"American": {"espeak": "b A d", "ipa": "bɑd"}, "British": {"espeak": "b O d", "ipa": "bɒd"}},
-    "bit": {"American": {"espeak": "b I t", "ipa": "bɪt"}, "British": {"espeak": "b I t", "ipa": "bɪt"}},
-    "beat": {"American": {"espeak": "b i: t", "ipa": "biːt"}, "British": {"espeak": "b i: t", "ipa": "biːt"}},
-    "sit": {"American": {"espeak": "s I t", "ipa": "sɪt"}, "British": {"espeak": "s I t", "ipa": "sɪt"}},
-    "seat": {"American": {"espeak": "s i: t", "ipa": "siːt"}, "British": {"espeak": "s i: t", "ipa": "siːt"}},
-    "ship": {"American": {"espeak": "S I p", "ipa": "ʃɪp"}, "British": {"espeak": "S I p", "ipa": "ʃɪp"}},
-    "sheep": {"American": {"espeak": "S i: p", "ipa": "ʃiːp"}, "British": {"espeak": "S i: p", "ipa": "ʃiːp"}},
-    "fit": {"American": {"espeak": "f I t", "ipa": "fɪt"}, "British": {"espeak": "f I t", "ipa": "fɪt"}},
-    "feet": {"American": {"espeak": "f i: t", "ipa": "fiːt"}, "British": {"espeak": "f i: t", "ipa": "fiːt"}},
-    "lip": {"American": {"espeak": "l I p", "ipa": "lɪp"}, "British": {"espeak": "l I p", "ipa": "lɪp"}},
-    "leap": {"American": {"espeak": "l i: p", "ipa": "liːp"}, "British": {"espeak": "l i: p", "ipa": "liːp"}},
-    "full": {"American": {"espeak": "f U l", "ipa": "fʊl"}, "British": {"espeak": "f U l", "ipa": "fʊl"}},
-    "fool": {"American": {"espeak": "f u: l", "ipa": "fuːl"}, "British": {"espeak": "f u: l", "ipa": "fuːl"}},
-    "pull": {"American": {"espeak": "p U l", "ipa": "pʊl"}, "British": {"espeak": "p U l", "ipa": "pʊl"}},
-    "pool": {"American": {"espeak": "p u: l", "ipa": "puːl"}, "British": {"espeak": "p u: l", "ipa": "puːl"}},
-    "wood": {"American": {"espeak": "w U d", "ipa": "wʊd"}, "British": {"espeak": "w U d", "ipa": "wʊd"}},
-    "wooed": {"American": {"espeak": "w u: d", "ipa": "wuːd"}, "British": {"espeak": "w u: d", "ipa": "wuːd"}},
-    "could": {"American": {"espeak": "k U d", "ipa": "kʊd"}, "British": {"espeak": "k U d", "ipa": "kʊd"}},
-    "cooed": {"American": {"espeak": "k u: d", "ipa": "kuːd"}, "British": {"espeak": "k u: d", "ipa": "kuːd"}},
-    "should": {"American": {"espeak": "S U d", "ipa": "ʃʊd"}, "British": {"espeak": "S U d", "ipa": "ʃʊd"}},
-    "shoed": {"American": {"espeak": "S u: d", "ipa": "ʃuːd"}, "British": {"espeak": "S u: d", "ipa": "ʃuːd"}},
-    "wait": {"American": {"espeak": "w eI t", "ipa": "weɪt"}, "British": {"espeak": "w eI t", "ipa": "weɪt"}},
-    "wet": {"American": {"espeak": "w E t", "ipa": "wɛt"}, "British": {"espeak": "w E t", "ipa": "wɛt"}},
-    "late": {"American": {"espeak": "l eI t", "ipa": "leɪt"}, "British": {"espeak": "l eI t", "ipa": "leɪt"}},
-    "let": {"American": {"espeak": "l E t", "ipa": "lɛt"}, "British": {"espeak": "l E t", "ipa": "lɛt"}},
-    "pain": {"American": {"espeak": "p eI n", "ipa": "peɪn"}, "British": {"espeak": "p eI n", "ipa": "peɪn"}},
-    "pen": {"American": {"espeak": "p E n", "ipa": "pɛn"}, "British": {"espeak": "p E n", "ipa": "pɛn"}},
-    "main": {"American": {"espeak": "m eI n", "ipa": "meɪn"}, "British": {"espeak": "m eI n", "ipa": "meɪn"}},
-    "men": {"American": {"espeak": "m E n", "ipa": "mɛn"}, "British": {"espeak": "m E n", "ipa": "mɛn"}},
-    "sail": {"American": {"espeak": "s eI l", "ipa": "seɪl"}, "British": {"espeak": "s eI l", "ipa": "seɪl"}},
-    "sell": {"American": {"espeak": "s E l", "ipa": "sɛl"}, "British": {"espeak": "s E l", "ipa": "sɛl"}},
-    "lit": {"American": {"espeak": "l I t", "ipa": "lɪt"}, "British": {"espeak": "l I t", "ipa": "lɪt"}},
-    "rit": {"American": {"espeak": "r I t", "ipa": "rɪt"}, "British": {"espeak": "r I t", "ipa": "rɪt"}},
-    "bite": {"American": {"espeak": "b aI t", "ipa": "baɪt"}, "British": {"espeak": "b aI t", "ipa": "baɪt"}},
-    "sight": {"American": {"espeak": "s aI t", "ipa": "saɪt"}, "British": {"espeak": "s aI t", "ipa": "saɪt"}},
-    "night": {"American": {"espeak": "n aI t", "ipa": "naɪt"}, "British": {"espeak": "n aI t", "ipa": "naɪt"}},
-    "nit": {"American": {"espeak": "n I t", "ipa": "nɪt"}, "British": {"espeak": "n I t", "ipa": "nɪt"}},
-    "now": {"American": {"espeak": "n aU", "ipa": "naʊ"}, "British": {"espeak": "n aU", "ipa": "naʊ"}},
-    "no": {"American": {"espeak": "n @U", "ipa": "noʊ"}, "British": {"espeak": "n @U", "ipa": "nəʊ"}},
-    "how": {"American": {"espeak": "h aU", "ipa": "haʊ"}, "British": {"espeak": "h aU", "ipa": "haʊ"}},
-    "ho": {"American": {"espeak": "h @U", "ipa": "hoʊ"}, "British": {"espeak": "h @U", "ipa": "həʊ"}},
-    "cow": {"American": {"espeak": "k aU", "ipa": "kaʊ"}, "British": {"espeak": "k aU", "ipa": "kaʊ"}},
-    "co": {"American": {"espeak": "k @U", "ipa": "koʊ"}, "British": {"espeak": "k @U", "ipa": "kəʊ"}},
-    "out": {"American": {"espeak": "@U t", "ipa": "aʊt"}, "British": {"espeak": "@U t", "ipa": "aʊt"}},
-    "oat": {"American": {"espeak": "@U t", "ipa": "oʊt"}, "British": {"espeak": "@U t", "ipa": "əʊt"}},
-    "loud": {"American": {"espeak": "l aU d", "ipa": "laʊd"}, "British": {"espeak": "l aU d", "ipa": "laʊd"}},
-    "load": {"American": {"espeak": "l @U d", "ipa": "loʊd"}, "British": {"espeak": "l @U d", "ipa": "ləʊd"}},
-    "water": {"American": {"espeak": "w O t @ r", "ipa": "ˈwɔtɚ"}, "British": {"espeak": "w O: t @", "ipa": "ˈwɔːtə"}},
-    "wetter": {"American": {"espeak": "w E t @ r", "ipa": "ˈwɛtɚ"}, "British": {"espeak": "w E t @", "ipa": "ˈwɛtə"}},
-    "better": {"American": {"espeak": "b E t @ r", "ipa": "ˈbɛtɚ"}, "British": {"espeak": "b E t @", "ipa": "ˈbɛtə"}},
-    "betta": {"American": {"espeak": "b E t @", "ipa": "ˈbɛtə"}, "British": {"espeak": "b E t @", "ipa": "ˈbɛtə"}},
-    "letter": {"American": {"espeak": "l E t @ r", "ipa": "ˈlɛtɚ"}, "British": {"espeak": "l E t @", "ipa": "ˈlɛtə"}},
-    "letta": {"American": {"espeak": "l E t @", "ipa": "ˈlɛtə"}, "British": {"espeak": "l E t @", "ipa": "ˈlɛtə"}},
-    "matter": {"American": {"espeak": "m æ t @ r", "ipa": "ˈmætɚ"}, "British": {"espeak": "m æ t @", "ipa": "ˈmætə"}},
-    "matta": {"American": {"espeak": "m æ t @", "ipa": "ˈmætə"}, "British": {"espeak": "m æ t @", "ipa": "ˈmætə"}},
-    "butter": {"American": {"espeak": "b A t @ r", "ipa": "ˈbʌtɚ"}, "British": {"espeak": "b A t @", "ipa": "ˈbʌtə"}},
-    "butta": {"American": {"espeak": "b A t @", "ipa": "ˈbʌtə"}, "British": {"espeak": "b A t @", "ipa": "ˈbʌtə"}},
-    "cart": {"American": {"espeak": "k A r t", "ipa": "kɑrt"}, "British": {"espeak": "k A: t", "ipa": "kɑːt"}},
-    "heart": {"American": {"espeak": "h A r t", "ipa": "hɑrt"}, "British": {"espeak": "h A: t", "ipa": "hɑːt"}},
-    "bart": {"American": {"espeak": "b A r t", "ipa": "bɑrt"}, "British": {"espeak": "b A: t", "ipa": "bɑːt"}},
-    "sard": {"American": {"espeak": "s A r d", "ipa": "sɑrd"}, "British": {"espeak": "s A: d", "ipa": "sɑːd"}},
-    "bard": {"American": {"espeak": "b A r d", "ipa": "bɑrd"}, "British": {"espeak": "b A: d", "ipa": "bɑːd"}},
-    "hoe": {"American": {"espeak": "h @U", "ipa": "hoʊ"}, "British": {"espeak": "h @U", "ipa": "həʊ"}},
-    "about": {"American": {"espeak": "@ b aU t", "ipa": "əˈbaʊt"}, "British": {"espeak": "@ b aU t", "ipa": "əˈbaʊt"}},
-    "above": {"American": {"espeak": "@ b A v", "ipa": "əˈbʌv"}, "British": {"espeak": "@ b A v", "ipa": "əˈbʌv"}},
-    "again": {"American": {"espeak": "@ g E n", "ipa": "əˈɡɛn"}, "British": {"espeak": "@ g E n", "ipa": "əˈɡɛn"}},
-    "ago": {"American": {"espeak": "@ g @U", "ipa": "əˈɡoʊ"}, "British": {"espeak": "@ g @U", "ipa": "əˈɡəʊ"}},
-    "away": {"American": {"espeak": "@ w eI", "ipa": "əˈweɪ"}, "British": {"espeak": "@ w eI", "ipa": "əˈweɪ"}},
-    "banana": {"American": {"espeak": "b @ n æ n @", "ipa": "bəˈnænə"}, "British": {"espeak": "b @ n A: n @", "ipa": "bəˈnɑːnə"}},
-    "camera": {"American": {"espeak": "k æ m @ r @", "ipa": "ˈkæmərə"}, "British": {"espeak": "k æ m @ r @", "ipa": "ˈkæmərə"}},
-    "sofa": {"American": {"espeak": "s @U f @", "ipa": "ˈsoʊfə"}, "British": {"espeak": "s @U f @", "ipa": "ˈsəʊfə"}},
-    "panda": {"American": {"espeak": "p æ n d @", "ipa": "ˈpændə"}, "British": {"espeak": "p æ n d @", "ipa": "ˈpændə"}},
-    "zebra": {"American": {"espeak": "z i: b r @", "ipa": "ˈziːbrə"}, "British": {"espeak": "z E b r @", "ipa": "ˈzɛbrə"}},
-    "help": {"American": {"espeak": "h E l p", "ipa": "hɛlp"}, "British": {"espeak": "h E l p", "ipa": "hɛlp"}},
-    "hope": {"American": {"espeak": "h @U p", "ipa": "hoʊp"}, "British": {"espeak": "h @U p", "ipa": "həʊp"}},
-    "hand": {"American": {"espeak": "h æ n d", "ipa": "hænd"}, "British": {"espeak": "h æ n d", "ipa": "hænd"}},
-    "hear": {"American": {"espeak": "h I r", "ipa": "hɪr"}, "British": {"espeak": "h I @", "ipa": "hɪə"}},
-    "high": {"American": {"espeak": "h aI", "ipa": "haɪ"}, "British": {"espeak": "h aI", "ipa": "haɪ"}},
-    "huge": {"American": {"espeak": "h j u: dZ", "ipa": "hjuːdʒ"}, "British": {"espeak": "h j u: dZ", "ipa": "hjuːdʒ"}},
-    "red": {"American": {"espeak": "r E d", "ipa": "rɛd"}, "British": {"espeak": "r E d", "ipa": "rɛd"}},
-    "write": {"American": {"espeak": "r aI t", "ipa": "raɪt"}, "British": {"espeak": "r aI t", "ipa": "raɪt"}},
-    "run": {"American": {"espeak": "r A n", "ipa": "rʌn"}, "British": {"espeak": "r A n", "ipa": "rʌn"}},
-    "ran": {"American": {"espeak": "r æ n", "ipa": "ræn"}, "British": {"espeak": "r æ n", "ipa": "ræn"}},
-    "rod": {"American": {"espeak": "r A d", "ipa": "rɑd"}, "British": {"espeak": "r O d", "ipa": "rɒd"}},
-    "rain": {"American": {"espeak": "r eI n", "ipa": "reɪn"}, "British": {"espeak": "r eI n", "ipa": "reɪn"}},
-    "record": {"American": {"espeak": "r E k @ r d", "ipa": "ˈrɛkɚd"}, "British": {"espeak": "r E k O: d", "ipa": "ˈrɛkɔːd"}},
-    "present": {"American": {"espeak": "p r E z @ n t", "ipa": "ˈprɛzənt"}, "British": {"espeak": "p r E z @ n t", "ipa": "ˈprɛzənt"}},
-    "object": {"American": {"espeak": "A b dZ E k t", "ipa": "ˈɑbdʒɛkt"}, "British": {"espeak": "O b dZ E k t", "ipa": "ˈɒbdʒɛkt"}},
-    "project": {"American": {"espeak": "p r A dZ E k t", "ipa": "ˈprɑdʒɛkt"}, "British": {"espeak": "p r O dZ E k t", "ipa": "ˈprɒdʒɛkt"}},
-    "permit": {"American": {"espeak": "p @ r m I t", "ipa": "pərˈmɪt"}, "British": {"espeak": "p @ m I t", "ipa": "pəˈmɪt"}},
-    "produce": {"American": {"espeak": "p r @ d u: s", "ipa": "prəˈduːs"}, "British": {"espeak": "p r @ d j u: s", "ipa": "prəˈdjuːs"}},
-    "import": {"American": {"espeak": "I m p O r t", "ipa": "ˈɪmpɔrt"}, "British": {"espeak": "I m p O: t", "ipa": "ˈɪmpɔːt"}},
-    "export": {"American": {"espeak": "E k s p O r t", "ipa": "ˈɛkspɔrt"}, "British": {"espeak": "E k s p O: t", "ipa": "ˈɛkspɔːt"}},
-    "contract": {"American": {"espeak": "k A n t r æ k t", "ipa": "ˈkɑntrækt"}, "British": {"espeak": "k O n t r æ k t", "ipa": "ˈkɒntrækt"}},
-    "contest": {"American": {"espeak": "k A n t E s t", "ipa": "ˈkɑntɛst"}, "British": {"espeak": "k O n t E s t", "ipa": "ˈkɒntɛst"}},
-    "sing": {"American": {"espeak": "s I N", "ipa": "sɪŋ"}, "British": {"espeak": "s I N", "ipa": "sɪŋ"}},
-    "song": {"American": {"espeak": "s O N", "ipa": "sɔŋ"}, "British": {"espeak": "s O N", "ipa": "sɒŋ"}},
-    "ring": {"American": {"espeak": "r I N", "ipa": "rɪŋ"}, "British": {"espeak": "r I N", "ipa": "rɪŋ"}},
-    "strong": {"American": {"espeak": "s t r O N", "ipa": "strɔŋ"}, "British": {"espeak": "s t r O N", "ipa": "strɒŋ"}},
-    "thing": {"American": {"espeak": "T I N", "ipa": "θɪŋ"}, "British": {"espeak": "T I N", "ipa": "θɪŋ"}},
-    "bring": {"American": {"espeak": "b r I N", "ipa": "brɪŋ"}, "British": {"espeak": "b r I N", "ipa": "brɪŋ"}},
-    "spring": {"American": {"espeak": "s p r I N", "ipa": "sprɪŋ"}, "British": {"espeak": "s p r I N", "ipa": "sprɪŋ"}},
-    "string": {"American": {"espeak": "s t r I N", "ipa": "strɪŋ"}, "British": {"espeak": "s t r I N", "ipa": "strɪŋ"}},
-    "judge": {"American": {"espeak": "dZ A dZ", "ipa": "dʒʌdʒ"}, "British": {"espeak": "dZ A dZ", "ipa": "dʒʌdʒ"}},
-    "garage": {"American": {"espeak": "g @ r A: Z", "ipa": "ɡəˈrɑːʒ"}, "British": {"espeak": "g æ r A: Z", "ipa": "ɡæˈrɑːʒ"}},
-    "age": {"American": {"espeak": "eI dZ", "ipa": "eɪdʒ"}, "British": {"espeak": "eI dZ", "ipa": "eɪdʒ"}},
-    "beige": {"American": {"espeak": "b eI Z", "ipa": "beɪʒ"}, "British": {"espeak": "b eI Z", "ipa": "beɪʒ"}},
-    "cage": {"American": {"espeak": "k eI dZ", "ipa": "keɪdʒ"}, "British": {"espeak": "k eI dZ", "ipa": "keɪdʒ"}},
-    "massage": {"American": {"espeak": "m @ s A: Z", "ipa": "məˈsɑːʒ"}, "British": {"espeak": "m æ s A: Z", "ipa": "mæˈsɑːʒ"}},
-    "page": {"American": {"espeak": "p eI dZ", "ipa": "peɪdʒ"}, "British": {"espeak": "p eI dZ", "ipa": "peɪdʒ"}},
-    "rouge": {"American": {"espeak": "r u: Z", "ipa": "ruːʒ"}, "British": {"espeak": "r u: Z", "ipa": "ruːʒ"}},
-    "stage": {"American": {"espeak": "s t eI dZ", "ipa": "steɪdʒ"}, "British": {"espeak": "s t eI dZ", "ipa": "steɪdʒ"}},
-    "prestige": {"American": {"espeak": "p r E s t i: Z", "ipa": "prɛˈstiːʒ"}, "British": {"espeak": "p r E s t i: Z", "ipa": "prɛˈstiːʒ"}},
-    "west": {"American": {"espeak": "w E s t", "ipa": "wɛst"}, "British": {"espeak": "w E s t", "ipa": "wɛst"}},
-    "wine": {"American": {"espeak": "w aI n", "ipa": "waɪn"}, "British": {"espeak": "w aI n", "ipa": "waɪn"}},
-    "worse": {"American": {"espeak": "w 3: r s", "ipa": "wɜrs"}, "British": {"espeak": "w 3: s", "ipa": "wɜːs"}},
-    "verse": {"American": {"espeak": "v 3: r s", "ipa": "vɜrs"}, "British": {"espeak": "v 3: s", "ipa": "vɜːs"}},
-    "wary": {"American": {"espeak": "w E r i:", "ipa": "ˈwɛri"}, "British": {"espeak": "w E@ r i:", "ipa": "ˈweəri"}},
-    # Additional words for Japanese patterns
-    "ket": {"American": {"espeak": "k E t", "ipa": "kɛt"}, "British": {"espeak": "k E t", "ipa": "kɛt"}},
-    "het": {"American": {"espeak": "h E t", "ipa": "hɛt"}, "British": {"espeak": "h E t", "ipa": "hɛt"}},
-    "bet": {"American": {"espeak": "b E t", "ipa": "bɛt"}, "British": {"espeak": "b E t", "ipa": "bɛt"}},
-    "sed": {"American": {"espeak": "s E d", "ipa": "sɛd"}, "British": {"espeak": "s E d", "ipa": "sɛd"}},
-    "bed": {"American": {"espeak": "b E d", "ipa": "bɛd"}, "British": {"espeak": "b E d", "ipa": "bɛd"}},
-    "cut": {"American": {"espeak": "k A t", "ipa": "kʌt"}, "British": {"espeak": "k A t", "ipa": "kʌt"}},
-    "hut": {"American": {"espeak": "h A t", "ipa": "hʌt"}, "British": {"espeak": "h A t", "ipa": "hʌt"}},
-    "but": {"American": {"espeak": "b A t", "ipa": "bʌt"}, "British": {"espeak": "b A t", "ipa": "bʌt"}},
-    "cup": {"American": {"espeak": "k A p", "ipa": "kʌp"}, "British": {"espeak": "k A p", "ipa": "kʌp"}},
-    "cop": {"American": {"espeak": "k A p", "ipa": "kɑp"}, "British": {"espeak": "k O p", "ipa": "kɒp"}},
-    "luck": {"American": {"espeak": "l A k", "ipa": "lʌk"}, "British": {"espeak": "l A k", "ipa": "lʌk"}},
-    "lock": {"American": {"espeak": "l A k", "ipa": "lɑk"}, "British": {"espeak": "l O k", "ipa": "lɒk"}},
-    "boy": {"American": {"espeak": "b OI", "ipa": "bɔɪ"}, "British": {"espeak": "b OI", "ipa": "bɔɪ"}},
-    "toy": {"American": {"espeak": "t OI", "ipa": "tɔɪ"}, "British": {"espeak": "t OI", "ipa": "tɔɪ"}},
-    "coin": {"American": {"espeak": "k OI n", "ipa": "kɔɪn"}, "British": {"espeak": "k OI n", "ipa": "kɔɪn"}},
-    "join": {"American": {"espeak": "dZ OI n", "ipa": "dʒɔɪn"}, "British": {"espeak": "dZ OI n", "ipa": "dʒɔɪn"}},
-    "voice": {"American": {"espeak": "v OI s", "ipa": "vɔɪs"}, "British": {"espeak": "v OI s", "ipa": "vɔɪs"}},
-    "choice": {"American": {"espeak": "tS OI s", "ipa": "tʃɔɪs"}, "British": {"espeak": "tS OI s", "ipa": "tʃɔɪs"}},
-    "noise": {"American": {"espeak": "n OI z", "ipa": "nɔɪz"}, "British": {"espeak": "n OI z", "ipa": "nɔɪz"}},
-    "poise": {"American": {"espeak": "p OI z", "ipa": "pɔɪz"}, "British": {"espeak": "p OI z", "ipa": "pɔɪz"}},
-    "joy": {"American": {"espeak": "dZ OI", "ipa": "dʒɔɪ"}, "British": {"espeak": "dZ OI", "ipa": "dʒɔɪ"}},
-    "roy": {"American": {"espeak": "r OI", "ipa": "rɔɪ"}, "British": {"espeak": "r OI", "ipa": "rɔɪ"}},
-    "bade": {"American": {"espeak": "b eI d", "ipa": "beɪd"}, "British": {"espeak": "b eI d", "ipa": "beɪd"}},
-    "raid": {"American": {"espeak": "r eI d", "ipa": "reɪd"}, "British": {"espeak": "r eI d", "ipa": "reɪd"}},
-    "mate": {"American": {"espeak": "m eI t", "ipa": "meɪt"}, "British": {"espeak": "m eI t", "ipa": "meɪt"}},
-    "sate": {"American": {"espeak": "s eI t", "ipa": "seɪt"}, "British": {"espeak": "s eI t", "ipa": "seɪt"}},
-    "pate": {"American": {"espeak": "p eI t", "ipa": "peɪt"}, "British": {"espeak": "p eI t", "ipa": "peɪt"}},
-    "need": {"American": {"espeak": "n i: d", "ipa": "niːd"}, "British": {"espeak": "n i: d", "ipa": "niːd"}},
-    "meet": {"American": {"espeak": "m i: t", "ipa": "miːt"}, "British": {"espeak": "m i: t", "ipa": "miːt"}},
-    "see": {"American": {"espeak": "s i:", "ipa": "siː"}, "British": {"espeak": "s i:", "ipa": "siː"}},
-    "put": {"American": {"espeak": "p U t", "ipa": "pʊt"}, "British": {"espeak": "p U t", "ipa": "pʊt"}},
-    "book": {"American": {"espeak": "b U k", "ipa": "bʊk"}, "British": {"espeak": "b U k", "ipa": "bʊk"}},
-    "look": {"American": {"espeak": "l U k", "ipa": "lʊk"}, "British": {"espeak": "l U k", "ipa": "lʊk"}},
-    "took": {"American": {"espeak": "t U k", "ipa": "tʊk"}, "British": {"espeak": "t U k", "ipa": "tʊk"}},
-    "good": {"American": {"espeak": "g U d", "ipa": "gʊd"}, "British": {"espeak": "g U d", "ipa": "gʊd"}},
-    "food": {"American": {"espeak": "f u: d", "ipa": "fuːd"}, "British": {"espeak": "f u: d", "ipa": "fuːd"}},
-    "mood": {"American": {"espeak": "m u: d", "ipa": "muːd"}, "British": {"espeak": "m u: d", "ipa": "muːd"}},
-    "cool": {"American": {"espeak": "k u: l", "ipa": "kuːl"}, "British": {"espeak": "k u: l", "ipa": "kuːl"}},
-    "tool": {"American": {"espeak": "t u: l", "ipa": "tuːl"}, "British": {"espeak": "t u: l", "ipa": "tuːl"}},
-    "rule": {"American": {"espeak": "r u: l", "ipa": "ruːl"}, "British": {"espeak": "r u: l", "ipa": "ruːl"}},
-    "day": {"American": {"espeak": "d eI", "ipa": "deɪ"}, "British": {"espeak": "d eI", "ipa": "deɪ"}},
-    "say": {"American": {"espeak": "s eI", "ipa": "seɪ"}, "British": {"espeak": "s eI", "ipa": "seɪ"}},
-    "way": {"American": {"espeak": "w eI", "ipa": "weɪ"}, "British": {"espeak": "w eI", "ipa": "weɪ"}},
-    "stay": {"American": {"espeak": "s t eI", "ipa": "steɪ"}, "British": {"espeak": "s t eI", "ipa": "steɪ"}},
-    "time": {"American": {"espeak": "t aI m", "ipa": "taɪm"}, "British": {"espeak": "t aI m", "ipa": "taɪm"}},
-    "like": {"American": {"espeak": "l aI k", "ipa": "laɪk"}, "British": {"espeak": "l aI k", "ipa": "laɪk"}},
-    "fine": {"American": {"espeak": "f aI n", "ipa": "faɪn"}, "British": {"espeak": "f aI n", "ipa": "faɪn"}},
-    "line": {"American": {"espeak": "l aI n", "ipa": "laɪn"}, "British": {"espeak": "l aI n", "ipa": "laɪn"}},
-    "mine": {"American": {"espeak": "m aI n", "ipa": "maɪn"}, "British": {"espeak": "m aI n", "ipa": "maɪn"}},
-    "house": {"American": {"espeak": "h aU s", "ipa": "haʊs"}, "British": {"espeak": "h aU s", "ipa": "haʊs"}},
-    "mouse": {"American": {"espeak": "m aU s", "ipa": "maʊs"}, "British": {"espeak": "m aU s", "ipa": "maʊs"}},
-    "down": {"American": {"espeak": "d aU n", "ipa": "daʊn"}, "British": {"espeak": "d aU n", "ipa": "daʊn"}},
-    "town": {"American": {"espeak": "t aU n", "ipa": "taʊn"}, "British": {"espeak": "t aU n", "ipa": "taʊn"}},
-    "round": {"American": {"espeak": "r aU n d", "ipa": "raʊnd"}, "British": {"espeak": "r aU n d", "ipa": "raʊnd"}},
-    "hit": {"American": {"espeak": "h I t", "ipa": "hɪt"}, "British": {"espeak": "h I t", "ipa": "hɪt"}},
-    "win": {"American": {"espeak": "w I n", "ipa": "wɪn"}, "British": {"espeak": "w I n", "ipa": "wɪn"}},
-    "pin": {"American": {"espeak": "p I n", "ipa": "pɪn"}, "British": {"espeak": "p I n", "ipa": "pɪn"}},
-    "tin": {"American": {"espeak": "t I n", "ipa": "tɪn"}, "British": {"espeak": "t I n", "ipa": "tɪn"}},
-    "get": {"American": {"espeak": "g E t", "ipa": "gɛt"}, "British": {"espeak": "g E t", "ipa": "gɛt"}},
-    "net": {"American": {"espeak": "n E t", "ipa": "nɛt"}, "British": {"espeak": "n E t", "ipa": "nɛt"}},
-    "bridge": {"American": {"espeak": "b r I dZ", "ipa": "brɪdʒ"}, "British": {"espeak": "b r I dZ", "ipa": "brɪdʒ"}},
-    "edge": {"American": {"espeak": "E dZ", "ipa": "ɛdʒ"}, "British": {"espeak": "E dZ", "ipa": "ɛdʒ"}},
-    "badge": {"American": {"espeak": "b { dZ", "ipa": "bædʒ"}, "British": {"espeak": "b { dZ", "ipa": "bædʒ"}},
-    "fridge": {"American": {"espeak": "f r I dZ", "ipa": "frɪdʒ"}, "British": {"espeak": "f r I dZ", "ipa": "frɪdʒ"}},
-    "hedge": {"American": {"espeak": "h E dZ", "ipa": "hɛdʒ"}, "British": {"espeak": "h E dZ", "ipa": "hɛdʒ"}},
-    "web": {"American": {"espeak": "w E b", "ipa": "wɛb"}, "British": {"espeak": "w E b", "ipa": "wɛb"}},
-    "wax": {"American": {"espeak": "w { k s", "ipa": "wæks"}, "British": {"espeak": "w { k s", "ipa": "wæks"}},
-    "wish": {"American": {"espeak": "w I S", "ipa": "wɪʃ"}, "British": {"espeak": "w I S", "ipa": "wɪʃ"}},
-    "wave": {"American": {"espeak": "w eI v", "ipa": "weɪv"}, "British": {"espeak": "w eI v", "ipa": "weɪv"}},
-    "through": {"American": {"espeak": "T r u:", "ipa": "θruː"}, "British": {"espeak": "T r u:", "ipa": "θruː"}},
-    "throw": {"American": {"espeak": "T r @U", "ipa": "θroʊ"}, "British": {"espeak": "T r @U", "ipa": "θrəʊ"}},
-    "throat": {"American": {"espeak": "T r @U t", "ipa": "θroʊt"}, "British": {"espeak": "T r @U t", "ipa": "θrəʊt"}},
-    "thrust": {"American": {"espeak": "T r A s t", "ipa": "θrʌst"}, "British": {"espeak": "T r A s t", "ipa": "θrʌst"}},
-    "threat": {"American": {"espeak": "T r E t", "ipa": "θrɛt"}, "British": {"espeak": "T r E t", "ipa": "θrɛt"}},
-}
-
-# Pattern definitions organized by user_mode and accent
-# Structure: PATTERN_SETS[user_mode][accent][pattern_id] = {name, description, words}
-
-PATTERN_SETS = {
-    "Native": {
-        "American": {
-            1: {"name": "/oʊ/ sound", "description": "GOAT vowel", "words": ["go", "know", "show", "home", "boat", "phone", "road", "coat", "note", "low"]},
-            2: {"name": "/æ/ sound", "description": "TRAP vowel", "words": ["dance", "bath", "grass", "class", "path", "fast", "ask", "half", "laugh", "after"]},
-            3: {"name": "/ɑ/ sound", "description": "LOT vowel", "words": ["lot", "hot", "not", "pot", "got", "cot", "nod", "rob", "stop", "top"]},
-            4: {"name": "/ɔ/ sound", "description": "CLOTH vowel", "words": ["cloth", "off", "soft", "cross", "loss", "boss", "cost", "frost", "toss", "moss"]},
-            5: {"name": "/ɑr/ sound", "description": "R-coloring - START", "words": ["car", "far", "bar", "star", "hard", "card", "park", "dark", "arm", "art"]},
-            6: {"name": "/ɔr/ sound", "description": "R-coloring - NORTH", "words": ["more", "door", "floor", "store", "four", "pour", "warm", "corn", "born", "worn"]},
-            7: {"name": "/ɪr/ sound", "description": "R-coloring - NEAR", "words": ["near", "here", "fear", "clear", "year", "ear", "beer", "dear", "tear", "sheer"]},
-            8: {"name": "/ɛr/ sound", "description": "R-coloring - SQUARE", "words": ["air", "care", "share", "where", "hair", "fair", "square", "stare", "rare", "bear"]},
-            9: {"name": "/ʊr/ sound", "description": "R-coloring - CURE", "words": ["tour", "poor", "sure", "cure", "pure", "lure", "endure", "mature", "secure", "obscure"]},
-            10: {"name": "/ɜr/ sound", "description": "R-coloring - NURSE", "words": ["nurse", "bird", "word", "heard", "turn", "burn", "curse", "first", "third", "learn"]},
-        },
-        "British": {
-            1: {"name": "/əʊ/ sound", "description": "GOAT vowel", "words": ["go", "know", "show", "home", "boat", "phone", "road", "coat", "note", "low"]},
-            2: {"name": "/ɑː/ sound", "description": "BATH vowel", "words": ["dance", "bath", "grass", "class", "path", "fast", "ask", "half", "laugh", "after"]},
-            3: {"name": "/ɒ/ sound", "description": "LOT vowel", "words": ["lot", "hot", "not", "pot", "got", "cot", "nod", "rob", "stop", "top"]},
-            4: {"name": "/ɒ/ sound", "description": "CLOTH vowel", "words": ["cloth", "off", "soft", "cross", "loss", "boss", "cost", "frost", "toss", "moss"]},
-            5: {"name": "/ɑː/ sound", "description": "START vowel", "words": ["car", "far", "bar", "star", "hard", "card", "park", "dark", "arm", "art"]},
-            6: {"name": "/ɔː/ sound", "description": "NORTH vowel", "words": ["more", "door", "floor", "store", "four", "pour", "warm", "corn", "born", "worn"]},
-            7: {"name": "/ɪə/ sound", "description": "NEAR vowel", "words": ["near", "here", "fear", "clear", "year", "ear", "beer", "dear", "tear", "sheer"]},
-            8: {"name": "/eə/ sound", "description": "SQUARE vowel", "words": ["air", "care", "share", "where", "hair", "fair", "square", "stare", "rare", "bear"]},
-            9: {"name": "/ʊə/ sound", "description": "CURE vowel", "words": ["tour", "poor", "sure", "cure", "pure", "lure", "endure", "mature", "secure", "obscure"]},
-            10: {"name": "/ɜː/ sound", "description": "NURSE vowel", "words": ["nurse", "bird", "word", "heard", "turn", "burn", "curse", "first", "third", "learn"]},
-        }
-    },
-    "Japanese": {
-        "American": {
-            1: {"name": "/æ/ sound", "description": "TRAP vowel", "words": ["cat", "hat", "bat", "sad", "bad", "dance", "fast", "ask", "half", "laugh"]},
-            2: {"name": "/ɑ/ sound", "description": "LOT vowel", "words": ["lot", "hot", "not", "pot", "got", "cot", "nod", "rob", "stop", "top"]},
-            3: {"name": "/ɪ/ sound", "description": "KIT vowel", "words": ["bit", "sit", "fit", "hit", "ship", "lip", "win", "pin", "tin", "sin"]},
-            4: {"name": "/iː/ sound", "description": "FLEECE vowel", "words": ["beat", "seat", "feet", "meet", "sheep", "leap", "read", "lead", "need", "see"]},
-            5: {"name": "/ʊ/ sound", "description": "FOOT vowel", "words": ["wood", "book", "look", "took", "good", "full", "pull", "could", "should", "put"]},
-            6: {"name": "/uː/ sound", "description": "GOOSE vowel", "words": ["food", "mood", "cool", "tool", "rule", "fool", "pool", "wooed", "cooed", "shoed"]},
-            7: {"name": "/eɪ/ sound", "description": "FACE diphthong", "words": ["day", "say", "way", "play", "stay", "wait", "late", "pain", "main", "sail"]},
-            8: {"name": "/aɪ/ sound", "description": "PRICE diphthong", "words": ["light", "right", "sight", "night", "bite", "time", "like", "fine", "line", "mine"]},
-            9: {"name": "/aʊ/ sound", "description": "MOUTH diphthong", "words": ["now", "how", "cow", "out", "loud", "house", "mouse", "down", "town", "round"]},
-            10: {"name": "/ə/ sound", "description": "Schwa vowel", "words": ["about", "above", "again", "ago", "away", "banana", "camera", "sofa", "panda", "zebra"]},
-        },
-        "British": {
-            1: {"name": "/æ/ sound", "description": "TRAP vowel", "words": ["cat", "hat", "bat", "sad", "bad", "dance", "fast", "ask", "half", "laugh"]},
-            2: {"name": "/ɑː/ sound", "description": "BATH vowel", "words": ["dance", "bath", "grass", "class", "path", "fast", "ask", "half", "laugh", "after"]},
-            3: {"name": "/ɪ/ sound", "description": "KIT vowel", "words": ["bit", "sit", "fit", "hit", "ship", "lip", "win", "pin", "tin", "sin"]},
-            4: {"name": "/iː/ sound", "description": "FLEECE vowel", "words": ["beat", "seat", "feet", "meet", "sheep", "leap", "read", "lead", "need", "see"]},
-            5: {"name": "/ʊ/ sound", "description": "FOOT vowel", "words": ["wood", "book", "look", "took", "good", "full", "pull", "could", "should", "put"]},
-            6: {"name": "/uː/ sound", "description": "GOOSE vowel", "words": ["food", "mood", "cool", "tool", "rule", "fool", "pool", "wooed", "cooed", "shoed"]},
-            7: {"name": "/eɪ/ sound", "description": "FACE diphthong", "words": ["day", "say", "way", "play", "stay", "wait", "late", "pain", "main", "sail"]},
-            8: {"name": "/aɪ/ sound", "description": "PRICE diphthong", "words": ["light", "right", "sight", "night", "bite", "time", "like", "fine", "line", "mine"]},
-            9: {"name": "/aʊ/ sound", "description": "MOUTH diphthong", "words": ["now", "how", "cow", "out", "loud", "house", "mouse", "down", "town", "round"]},
-            10: {"name": "/ə/ sound", "description": "Schwa vowel", "words": ["about", "above", "again", "ago", "away", "banana", "camera", "sofa", "panda", "zebra"]},
-        }
-    },
-    "French": {
-        "American": {
-            1: {"name": "/θ/ sound", "description": "TH pronunciation", "words": ["think", "thick", "thin", "thought", "three", "through", "throw", "throat", "thrust", "threat"]},
-            2: {"name": "/h/ sound", "description": "H pronunciation", "words": ["hat", "hot", "help", "hope", "hand", "hard", "here", "hear", "high", "huge"]},
-            3: {"name": "/r/ sound", "description": "R pronunciation", "words": ["red", "read", "right", "write", "run", "ran", "road", "rod", "rain", "ran"]},
-            4: {"name": "/ɪ/ sound", "description": "KIT vowel", "words": ["bit", "sit", "fit", "hit", "ship", "lip", "win", "pin", "tin", "sin"]},
-            5: {"name": "/iː/ sound", "description": "FLEECE vowel", "words": ["beat", "seat", "feet", "meet", "sheep", "leap", "read", "lead", "need", "see"]},
-            6: {"name": "/ə/ sound", "description": "Schwa vowel", "words": ["about", "above", "again", "ago", "away", "banana", "camera", "sofa", "panda", "zebra"]},
-            7: {"name": "/ɛ/ sound", "description": "DRESS vowel", "words": ["bed", "red", "met", "set", "pet", "wet", "let", "get", "bet", "net"]},
-            8: {"name": "/ŋ/ sound", "description": "NG ending", "words": ["sing", "song", "ring", "wrong", "long", "strong", "thing", "bring", "spring", "string"]},
-            9: {"name": "/dʒ/ sound", "description": "J pronunciation", "words": ["judge", "age", "cage", "page", "stage", "bridge", "edge", "badge", "fridge", "hedge"]},
-            10: {"name": "/w/ sound", "description": "W pronunciation", "words": ["west", "wine", "wet", "worse", "wary", "win", "web", "wax", "wish", "wave"]},
-        },
-        "British": {
-            1: {"name": "/θ/ sound", "description": "TH pronunciation", "words": ["think", "thick", "thin", "thought", "three", "through", "throw", "throat", "thrust", "threat"]},
-            2: {"name": "/h/ sound", "description": "H pronunciation", "words": ["hat", "hot", "help", "hope", "hand", "hard", "here", "hear", "high", "huge"]},
-            3: {"name": "/r/ sound", "description": "R pronunciation", "words": ["red", "read", "right", "write", "run", "ran", "road", "rod", "rain", "ran"]},
-            4: {"name": "/ɪ/ sound", "description": "KIT vowel", "words": ["bit", "sit", "fit", "hit", "ship", "lip", "win", "pin", "tin", "sin"]},
-            5: {"name": "/iː/ sound", "description": "FLEECE vowel", "words": ["beat", "seat", "feet", "meet", "sheep", "leap", "read", "lead", "need", "see"]},
-            6: {"name": "/ə/ sound", "description": "Schwa vowel", "words": ["about", "above", "again", "ago", "away", "banana", "camera", "sofa", "panda", "zebra"]},
-            7: {"name": "/ɛ/ sound", "description": "DRESS vowel", "words": ["bed", "red", "met", "set", "pet", "wet", "let", "get", "bet", "net"]},
-            8: {"name": "/ŋ/ sound", "description": "NG ending", "words": ["sing", "song", "ring", "wrong", "long", "strong", "thing", "bring", "spring", "string"]},
-            9: {"name": "/dʒ/ sound", "description": "J pronunciation", "words": ["judge", "age", "cage", "page", "stage", "bridge", "edge", "badge", "fridge", "hedge"]},
-            10: {"name": "/w/ sound", "description": "W pronunciation", "words": ["west", "wine", "wet", "worse", "wary", "win", "web", "wax", "wish", "wave"]},
-        }
+# Phonics data structure matching frontend
+# Structure: PHONICS_DATA[level][category][sound_index] = {sound, ipa, es, words}
+PHONICS_DATA = {
+    "Basic": {
+        "Single Consonants": [
+            {"sound": "b", "ipa": "/b/", "es": {"en-GB": "b", "en-US": "b", "en-AU": "b", "en-IE": "b", "en-IN": "b", "en-CA": "b"}, "words": ["bat", "ball", "cab"]},
+            {"sound": "c", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["cat", "cup", "can"]},
+            {"sound": "d", "ipa": "/d/", "es": {"en-GB": "d", "en-US": "d", "en-AU": "d", "en-IE": "d", "en-IN": "d", "en-CA": "d"}, "words": ["dog", "red", "hand"]},
+            {"sound": "f", "ipa": "/f/", "es": {"en-GB": "f", "en-US": "f", "en-AU": "f", "en-IE": "f", "en-IN": "f", "en-CA": "f"}, "words": ["fish", "fun", "leaf"]},
+            {"sound": "g", "ipa": "/ɡ/", "es": {"en-GB": "g", "en-US": "g", "en-AU": "g", "en-IE": "g", "en-IN": "g", "en-CA": "g"}, "words": ["go", "big", "bag"]},
+            {"sound": "h", "ipa": "/h/", "es": {"en-GB": "h", "en-US": "h", "en-AU": "h", "en-IE": "h", "en-IN": "h", "en-CA": "h"}, "words": ["hat", "hot", "hen"]},
+            {"sound": "j", "ipa": "/dʒ/", "es": {"en-GB": "dZ", "en-US": "dZ", "en-AU": "dZ", "en-IE": "dZ", "en-IN": "dZ", "en-CA": "dZ"}, "words": ["jam", "jet", "jar"]},
+            {"sound": "k", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["kite", "key", "book"]},
+            {"sound": "l", "ipa": "/l/", "es": {"en-GB": "l", "en-US": "l", "en-AU": "l", "en-IE": "l", "en-IN": "l", "en-CA": "l"}, "words": ["lip", "leg", "ball"]},
+            {"sound": "m", "ipa": "/m/", "es": {"en-GB": "m", "en-US": "m", "en-AU": "m", "en-IE": "m", "en-IN": "m", "en-CA": "m"}, "words": ["man", "mum", "moon"]},
+            {"sound": "n", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["net", "sun", "pen"]},
+            {"sound": "p", "ipa": "/p/", "es": {"en-GB": "p", "en-US": "p", "en-AU": "p", "en-IE": "p", "en-IN": "p", "en-CA": "p"}, "words": ["pen", "cap", "pig"]},
+            {"sound": "r", "ipa": {"en-GB": "/ɑː/", "en-US": "/ɹ/", "en-AU": "/ɑː/", "en-IE": "/ɑː/", "en-IN": "/ɹ/", "en-CA": "/ɹ/"}, "es": {"en-GB": "A:", "en-US": "r", "en-AU": "A:", "en-IE": "A:", "en-IN": "r", "en-CA": "r"}, "words": ["red", "run", "car"]},
+            {"sound": "s", "ipa": "/s/", "es": {"en-GB": "s", "en-US": "s", "en-AU": "s", "en-IE": "s", "en-IN": "s", "en-CA": "s"}, "words": ["sun", "sock", "bus"]},
+            {"sound": "t", "ipa": "/t/", "es": {"en-GB": "t", "en-US": "t", "en-AU": "t", "en-IE": "t", "en-IN": "t", "en-CA": "t"}, "words": ["top", "cat", "ten"]},
+            {"sound": "v", "ipa": "/v/", "es": {"en-GB": "v", "en-US": "v", "en-AU": "v", "en-IE": "v", "en-IN": "v", "en-CA": "v"}, "words": ["van", "vet", "five"]},
+            {"sound": "w", "ipa": "/w/", "es": {"en-GB": "w", "en-US": "w", "en-AU": "w", "en-IE": "w", "en-IN": "w", "en-CA": "w"}, "words": ["wet", "win", "cow"]},
+            {"sound": "x", "ipa": "/ks/", "es": {"en-GB": "ks", "en-US": "ks", "en-AU": "ks", "en-IE": "ks", "en-IN": "ks", "en-CA": "ks"}, "words": ["box", "fox", "six"]},
+            {"sound": "y", "ipa": "/j/", "es": {"en-GB": "j", "en-US": "j", "en-AU": "j", "en-IE": "j", "en-IN": "j", "en-CA": "j"}, "words": ["yes", "yellow", "yum"]},
+            {"sound": "z", "ipa": "/z/", "es": {"en-GB": "z", "en-US": "z", "en-AU": "z", "en-IE": "z", "en-IN": "z", "en-CA": "z"}, "words": ["zip", "zoo", "buzz"]}
+        ],
+        "Consonant Digraphs": [
+            {"sound": "ch", "ipa": "/tʃ/", "es": {"en-GB": "tS", "en-US": "tS", "en-AU": "tS", "en-IE": "tS", "en-IN": "tS", "en-CA": "tS"}, "words": ["chip", "chair", "lunch"]},
+            {"sound": "ck", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["duck", "clock", "sock"]},
+            {"sound": "ng", "ipa": "/ŋ/", "es": {"en-GB": "N", "en-US": "N", "en-AU": "N", "en-IE": "N", "en-IN": "N", "en-CA": "N"}, "words": ["ring", "sing", "long"]},
+            {"sound": "nk", "ipa": "/ŋk/", "es": {"en-GB": "Nk", "en-US": "Nk", "en-AU": "Nk", "en-IE": "Nk", "en-IN": "Nk", "en-CA": "Nk"}, "words": ["bank", "sink", "think"]},
+            {"sound": "qu", "ipa": "/kw/", "es": {"en-GB": "kw", "en-US": "kw", "en-AU": "kw", "en-IE": "kw", "en-IN": "kw", "en-CA": "kw"}, "words": ["queen", "quick", "quiz"]},
+            {"sound": "sh", "ipa": "/ʃ/", "es": {"en-GB": "S", "en-US": "S", "en-AU": "S", "en-IE": "S", "en-IN": "S", "en-CA": "S"}, "words": ["ship", "fish", "shop"]},
+            {"sound": "th", "ipa": "/θ/ /ð/", "es": {"en-GB": "T @", "en-US": "T @", "en-AU": "T @", "en-IE": "T @", "en-IN": "T @", "en-CA": "T @"}, "words": ["thin", "this", "bath"]}
+        ],
+        "Single Vowels": [
+            {"sound": "a", "ipa": "/æ/", "es": {"en-GB": "a", "en-US": "a", "en-AU": "a", "en-IE": "a", "en-IN": "a", "en-CA": "a"}, "words": ["ant", "apple", "cat"]},
+            {"sound": "e", "ipa": "/ɛ/", "es": {"en-GB": "E", "en-US": "E", "en-AU": "E", "en-IE": "E", "en-IN": "E", "en-CA": "E"}, "words": ["egg", "bed", "pen"]},
+            {"sound": "i", "ipa": "/ɪ/", "es": {"en-GB": "I", "en-US": "I", "en-AU": "I", "en-IE": "I", "en-IN": "I", "en-CA": "I"}, "words": ["in", "sit", "pig"]},
+            {"sound": "o", "ipa": "/ɒ/", "es": {"en-GB": "O", "en-US": "O", "en-AU": "O", "en-IE": "O", "en-IN": "O", "en-CA": "O"}, "words": ["on", "hot", "dog"]},
+            {"sound": "u", "ipa": "/ʌ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["up", "sun", "cup"]}
+        ],
+        "Vowel Digraphs": [
+            {"sound": "ai", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["snail", "rain", "train"]},
+            {"sound": "au", "ipa": "/ɔː/", "es": {"en-GB": "O:", "en-US": "O:", "en-AU": "O:", "en-IE": "O:", "en-IN": "O:", "en-CA": "O:"}, "words": ["haul", "cause", "pause"]},
+            {"sound": "aw", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔ/", "en-CA": "/ɔ/"}, "es": {"en-GB": "O:", "en-US": "O", "en-AU": "O:", "en-IE": "O:", "en-IN": "O", "en-CA": "O"}, "words": ["yawn", "paw", "claw"]},
+            {"sound": "ay", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["day", "play", "stay"]},
+            {"sound": "ea", "ipa": "/iː/", "es": {"en-GB": "i:", "en-US": "i:", "en-AU": "i:", "en-IE": "i:", "en-IN": "i:", "en-CA": "i:"}, "words": ["tea", "meat", "seat"]},
+            {"sound": "ea", "ipa": "/ɛ/", "es": {"en-GB": "E", "en-US": "E", "en-AU": "E", "en-IE": "E", "en-IN": "E", "en-CA": "E"}, "words": ["bread", "weather", "head"]},
+            {"sound": "ee", "ipa": "/iː/", "es": {"en-GB": "i:", "en-US": "i:", "en-AU": "i:", "en-IE": "i:", "en-IN": "i:", "en-CA": "i:"}, "words": ["see", "tree", "green"]},
+            {"sound": "ew", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["chew", "few", "new"]},
+            {"sound": "ie", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["tie", "pie", "die"]},
+            {"sound": "oa", "ipa": "/əʊ/", "es": {"en-GB": "@U", "en-US": "@U", "en-AU": "@U", "en-IE": "@U", "en-IN": "@U", "en-CA": "@U"}, "words": ["goat", "road", "boat"]},
+            {"sound": "oi", "ipa": "/ɔɪ/", "es": {"en-GB": "OI", "en-US": "OI", "en-AU": "OI", "en-IE": "OI", "en-IN": "OI", "en-CA": "OI"}, "words": ["spoil", "coin", "noise"]},
+            {"sound": "oo", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["zoo", "moon", "food"]},
+            {"sound": "oo", "ipa": "/ʊ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["book", "look", "foot"]},
+            {"sound": "ou", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["out", "shout", "cloud"]},
+            {"sound": "ow", "ipa": {"en-GB": "/əʊ/", "en-US": "/aʊ/", "en-AU": "/əʊ/", "en-IE": "/əʊ/", "en-IN": "/aʊ/", "en-CA": "/aʊ/"}, "es": {"en-GB": "@U", "en-US": "aU", "en-AU": "@U", "en-IE": "@U", "en-IN": "aU", "en-CA": "aU"}, "words": ["brown", "cow", "down"]},
+            {"sound": "oy", "ipa": "/ɔɪ/", "es": {"en-GB": "OI", "en-US": "OI", "en-AU": "OI", "en-IE": "OI", "en-IN": "OI", "en-CA": "OI"}, "words": ["boy", "toy", "coin"]}
+        ],
+        "Trigraphs": [
+            {"sound": "igh", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["high", "night", "light"]}
+        ],
+        "R-controlled Vowels": [
+            {"sound": "air", "ipa": {"en-GB": "/ɛə/", "en-US": "/ɛɹ/", "en-AU": "/ɛə/", "en-IE": "/ɛə/", "en-IN": "/ɛɹ/", "en-CA": "/ɛɹ/"}, "es": {"en-GB": "e@", "en-US": "e r", "en-AU": "e@", "en-IE": "e@", "en-IN": "e r", "en-CA": "e r"}, "words": ["hair", "fair", "chair"]},
+            {"sound": "ar", "ipa": {"en-GB": "/ɑː/", "en-US": "/ɑɹ/", "en-AU": "/ɑː/", "en-IE": "/ɑː/", "en-IN": "/ɑɹ/", "en-CA": "/ɑɹ/"}, "es": {"en-GB": "A:", "en-US": "A r", "en-AU": "A:", "en-IE": "A:", "en-IN": "A r", "en-CA": "A r"}, "words": ["car", "star", "farm"]},
+            {"sound": "are", "ipa": {"en-GB": "/ɛə/", "en-US": "/ɛɹ/", "en-AU": "/ɛə/", "en-IE": "/ɛə/", "en-IN": "/ɛɹ/", "en-CA": "/ɛɹ/"}, "es": {"en-GB": "e@", "en-US": "e r", "en-AU": "e@", "en-IE": "e@", "en-IN": "e r", "en-CA": "e r"}, "words": ["care", "share", "bare"]},
+            {"sound": "ear", "ipa": {"en-GB": "/ɪə/", "en-US": "/ɪɹ/", "en-AU": "/ɪə/", "en-IE": "/ɪə/", "en-IN": "/ɪɹ/", "en-CA": "/ɪɹ/"}, "es": {"en-GB": "i@", "en-US": "i r", "en-AU": "i@", "en-IE": "i@", "en-IN": "i r", "en-CA": "i r"}, "words": ["hear", "near", "dear"]},
+            {"sound": "er", "ipa": {"en-GB": "/ə/", "en-US": "/ɹ/", "en-AU": "/ə/", "en-IE": "/ə/", "en-IN": "/ɹ/", "en-CA": "/ɹ/"}, "es": {"en-GB": "@", "en-US": "r", "en-AU": "@", "en-IE": "@", "en-IN": "r", "en-CA": "r"}, "words": ["letter", "better", "summer"]},
+            {"sound": "ir", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["bird", "girl", "shirt"]},
+            {"sound": "ire", "ipa": {"en-GB": "/aɪə/", "en-US": "/aɪɹ/", "en-AU": "/aɪə/", "en-IE": "/aɪə/", "en-IN": "/aɪɹ/", "en-CA": "/aɪɹ/"}, "es": {"en-GB": "aI@", "en-US": "aI r", "en-AU": "aI@", "en-IE": "aI@", "en-IN": "aI r", "en-CA": "aI r"}, "words": ["fire", "wire", "tire"]},
+            {"sound": "or", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["fork", "corn", "short"]},
+            {"sound": "ur", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["nurse", "turn", "hurt"]},
+            {"sound": "ure", "ipa": {"en-GB": "/ɔə/", "en-US": "/ɔɹ/", "en-AU": "/ɔə/", "en-IE": "/ɔə/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O@", "en-US": "O r", "en-AU": "O@", "en-IE": "O@", "en-IN": "O r", "en-CA": "O r"}, "words": ["pure", "cure", "sure"]}
+        ],
+        "Silent E Patterns": [
+            {"sound": "a_e", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["cake", "name", "gate"]},
+            {"sound": "i_e", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["smile", "time", "bike"]},
+            {"sound": "o_e", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["home", "bone", "rose"]},
+            {"sound": "u_e", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["huge", "cube", "tune"]}
+        ]
+    },
+    "Advanced": {
+        "Soft C & G": [
+            {"sound": "c", "ipa": "/s/", "es": {"en-GB": "s", "en-US": "s", "en-AU": "s", "en-IE": "s", "en-IN": "s", "en-CA": "s"}, "words": ["city", "cent", "circle"]},
+            {"sound": "g", "ipa": "/dʒ/", "es": {"en-GB": "dZ", "en-US": "dZ", "en-AU": "dZ", "en-IE": "dZ", "en-IN": "dZ", "en-CA": "dZ"}, "words": ["gym", "gem", "giant"]}
+        ],
+        "Y as Vowel": [
+            {"sound": "y", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["my", "cry", "sky"]},
+            {"sound": "y", "ipa": "/ɪ/", "es": {"en-GB": "I", "en-US": "I", "en-AU": "I", "en-IE": "I", "en-IN": "I", "en-CA": "I"}, "words": ["happy", "baby", "lady"]}
+        ],
+        "Silent Letters": [
+            {"sound": "gn", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["gnat", "gnome", "sign"]},
+            {"sound": "kn", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["knee", "know", "knife"]},
+            {"sound": "ph", "ipa": "/f/", "es": {"en-GB": "f", "en-US": "f", "en-AU": "f", "en-IE": "f", "en-IN": "f", "en-CA": "f"}, "words": ["phone", "photo", "graph"]},
+            {"sound": "wr", "ipa": "/r/", "es": {"en-GB": "r", "en-US": "r", "en-AU": "r", "en-IE": "r", "en-IN": "r", "en-CA": "r"}, "words": ["write", "wrong", "wrap"]}
+        ],
+        "Quadgraphs": [
+            {"sound": "augh", "ipa": "/ɔ/", "es": {"en-GB": "O", "en-US": "O", "en-AU": "O", "en-IE": "O", "en-IN": "O", "en-CA": "O"}, "words": ["caught", "taught", "daughter"]},
+            {"sound": "eigh", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["eight", "weight", "neighbor"]},
+            {"sound": "ough", "ipa": "/ʌ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["tough", "rough", "enough"]},
+            {"sound": "ough", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["through", "who"]},
+            {"sound": "ough", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["though", "dough", "although"]},
+            {"sound": "ough", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["bough", "plough"]}
+        ]
     }
 }
+
+# Map frontend accent codes to backend accent names
+ACCENT_MAP = {
+    "en-GB": "British",
+    "en-US": "American",
+    "en-AU": "Australian",
+    "en-IE": "Irish",
+    "en-IN": "Indian",
+    "en-CA": "Canadian"
+}
+
+def get_value_for_accent(data, accent_code):
+    """Get value for accent, with fallback"""
+    if isinstance(data, dict):
+        return data.get(accent_code) or data.get("en-US") or list(data.values())[0]
+    return data
 
 def espeak_to_ipa(espeak_seq):
     """Convert eSpeak phonemes to IPA"""
@@ -831,6 +224,63 @@ def calculate_score(detected, expected):
     ratio = matcher.ratio()
     return int(ratio * 100)
 
+def get_espeak_phonemes_for_word(word, accent_code):
+    """Get eSpeak phonemes for a word using espeak-ng"""
+    accent_map = {
+        "en-GB": "en-gb",
+        "en-US": "en-us",
+        "en-AU": "en-au",
+        "en-IE": "en-ie",
+        "en-IN": "en-in",
+        "en-CA": "en-ca"
+    }
+    voice = accent_map.get(accent_code, "en-us")
+    
+    try:
+        # Use espeak-ng with phoneme output (-x flag)
+        result = subprocess.run(
+            ['espeak-ng', '-x', '-v', voice, word],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5
+        )
+        # Extract phonemes (remove brackets and clean)
+        phonemes = result.stdout.strip()
+        # Remove brackets if present
+        phonemes = re.sub(r'[\[\]]', '', phonemes)
+        return phonemes
+    except subprocess.TimeoutExpired:
+        return None
+    except Exception as e:
+        return None
+
+# Build WORDS dictionary lazily - phonemes will be fetched on-demand
+WORDS = {}
+
+def get_word_phonemes_lazy(word, accent_code):
+    """Get phonemes for a word on-demand (lazy loading)"""
+    accent_name = ACCENT_MAP.get(accent_code, "American")
+    
+    # Check cache first
+    if word in WORDS and accent_name in WORDS[word]:
+        return WORDS[word][accent_name]
+    
+    # Get phonemes from espeak-ng
+    espeak_phonemes = get_espeak_phonemes_for_word(word, accent_code)
+    if espeak_phonemes:
+        ipa_value = espeak_to_ipa(espeak_phonemes)
+        if word not in WORDS:
+            WORDS[word] = {}
+        WORDS[word][accent_name] = {
+            "espeak": espeak_phonemes,
+            "ipa": ipa_value
+        }
+        return WORDS[word][accent_name]
+    return None
+
+print("✓ Server ready (words will be loaded on-demand)")
+
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -843,51 +293,67 @@ def get_models():
             available.append({"id": model_id, "name": model_data["name"]})
     return jsonify(available)
 
-@app.route('/user-modes')
-def get_user_modes():
-    """Get available user modes"""
-    return jsonify(["Native", "Japanese", "French"])
+@app.route('/levels')
+def get_levels():
+    """Get available levels"""
+    return jsonify(list(PHONICS_DATA.keys()))
 
-@app.route('/patterns')
-def get_patterns():
-    """Get patterns for a specific user mode and accent"""
-    user_mode = request.args.get('user_mode', 'Native')
-    accent = request.args.get('accent', 'American')
+@app.route('/categories')
+def get_categories():
+    """Get categories for a level"""
+    level = request.args.get('level', 'Basic')
+    if level not in PHONICS_DATA:
+        return jsonify({"error": "Invalid level"}), 400
     
-    if user_mode not in PATTERN_SETS or accent not in PATTERN_SETS[user_mode]:
-        return jsonify({"error": "Invalid user_mode or accent"}), 400
+    return jsonify(list(PHONICS_DATA[level].keys()))
+
+@app.route('/sounds')
+def get_sounds():
+    """Get sounds for a level and category"""
+    level = request.args.get('level', 'Basic')
+    category = request.args.get('category', '')
     
-    patterns = []
-    for pattern_id in sorted(PATTERN_SETS[user_mode][accent].keys()):
-        pattern_data = PATTERN_SETS[user_mode][accent][pattern_id]
-        patterns.append({
-            "id": pattern_id,
-            "name": pattern_data["name"],
-            "description": pattern_data["description"]
+    if level not in PHONICS_DATA or category not in PHONICS_DATA[level]:
+        return jsonify({"error": "Invalid level or category"}), 400
+    
+    sounds = []
+    for idx, sound_data in enumerate(PHONICS_DATA[level][category]):
+        sounds.append({
+            "id": idx,
+            "sound": sound_data["sound"],
+            "ipa": get_value_for_accent(sound_data["ipa"], "en-US"),
+            "es": get_value_for_accent(sound_data["es"], "en-US")
         })
     
-    return jsonify(patterns)
+    return jsonify(sounds)
 
-@app.route('/pattern/<int:pattern_id>/words')
-def get_pattern_words(pattern_id):
-    """Get words for a specific pattern"""
-    user_mode = request.args.get('user_mode', 'Native')
-    accent = request.args.get('accent', 'American')
+@app.route('/sound/<int:sound_id>/words')
+def get_sound_words(sound_id):
+    """Get words for a specific sound"""
+    level = request.args.get('level', 'Basic')
+    category = request.args.get('category', '')
+    accent_code = request.args.get('accent', 'en-US')
     
-    if user_mode not in PATTERN_SETS or accent not in PATTERN_SETS[user_mode]:
-        return jsonify({"error": "Invalid user_mode or accent"}), 400
+    if level not in PHONICS_DATA or category not in PHONICS_DATA[level]:
+        return jsonify({"error": "Invalid level or category"}), 400
     
-    if pattern_id not in PATTERN_SETS[user_mode][accent]:
-        return jsonify({"error": "Pattern not found"}), 404
+    if sound_id >= len(PHONICS_DATA[level][category]):
+        return jsonify({"error": "Sound not found"}), 404
     
-    pattern_data = PATTERN_SETS[user_mode][accent][pattern_id]
+    sound_data = PHONICS_DATA[level][category][sound_id]
+    sound = sound_data["sound"]
+    es_value = get_value_for_accent(sound_data["es"], accent_code)
+    ipa_value = get_value_for_accent(sound_data["ipa"], accent_code)
+    
+    # Include the sound itself as the first word for practice
+    words = [sound] + sound_data["words"]
+    
     return jsonify({
-        "pattern": {
-            "id": pattern_id,
-            "name": pattern_data["name"],
-            "description": pattern_data["description"]
-        },
-        "words": pattern_data["words"]
+        "sound": sound,
+        "ipa": ipa_value,
+        "es": es_value,
+        "words": words,
+        "reference_es": es_value  # eSpeak letters for reference sound
     })
 
 @app.route('/tts', methods=['POST'])
@@ -895,29 +361,75 @@ def text_to_speech():
     """Generate speech audio using espeak"""
     data = request.get_json()
     text = data.get('text', '')
-    accent = data.get('accent', 'American')
+    accent_code = data.get('accent', 'en-US')
     
     if not text:
         return jsonify({"error": "No text provided"}), 400
     
-    # Map accent to espeak voice
-    # American: en-us, British: en-gb
-    voice = 'en-us' if accent == 'American' else 'en-gb'
+    # Map accent code to espeak voice
+    accent_map = {
+        "en-GB": "en-gb",
+        "en-US": "en-us",
+        "en-AU": "en-au",
+        "en-IE": "en-ie",
+        "en-IN": "en-in",
+        "en-CA": "en-ca"
+    }
+    voice = accent_map.get(accent_code, "en-us")
     
     # Generate audio file
     audio_path = '/tmp/tts_output.wav'
     try:
-        # Use espeak-ng to generate WAV file
-        # -s: speed (words per minute), -g: gap between words (ms)
-        # -v: voice, -w: output file
         subprocess.run([
             'espeak-ng',
-            '-s', '150',  # Speed
-            '-g', '5',    # Gap between words
+            '-s', '150',
+            '-g', '5',
             '-v', voice,
             '-w', audio_path,
             text
-        ], check=True, capture_output=True)
+        ], check=True, capture_output=True, timeout=10)
+        
+        if not os.path.exists(audio_path):
+            return jsonify({"error": "Audio generation failed"}), 500
+        
+        return send_file(audio_path, mimetype='audio/wav')
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"espeak error: {e.stderr.decode()}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"TTS failed: {e}"}), 500
+
+@app.route('/tts-espeak', methods=['POST'])
+def text_to_speech_espeak():
+    """Generate speech audio using espeak phonemes directly"""
+    data = request.get_json()
+    espeak_phonemes = data.get('espeak', '')
+    accent_code = data.get('accent', 'en-US')
+    
+    if not espeak_phonemes:
+        return jsonify({"error": "No espeak phonemes provided"}), 400
+    
+    accent_map = {
+        "en-GB": "en-gb",
+        "en-US": "en-us",
+        "en-AU": "en-au",
+        "en-IE": "en-ie",
+        "en-IN": "en-in",
+        "en-CA": "en-ca"
+    }
+    voice = accent_map.get(accent_code, "en-us")
+    
+    audio_path = '/tmp/tts_espeak_output.wav'
+    try:
+        # Use espeak with phoneme input ([[phonemes]])
+        phoneme_text = f"[[{espeak_phonemes}]]"
+        subprocess.run([
+            'espeak-ng',
+            '-s', '150',
+            '-g', '5',
+            '-v', voice,
+            '-w', audio_path,
+            phoneme_text
+        ], check=True, capture_output=True, timeout=10)
         
         if not os.path.exists(audio_path):
             return jsonify({"error": "Audio generation failed"}), 500
@@ -934,9 +446,11 @@ def analyze():
         return jsonify({"error": "No audio file"}), 400
     
     audio_file = request.files['audio']
-    accent = request.form.get('accent', 'American')
+    accent_code = request.form.get('accent', 'en-US')
     word = request.form.get('word', '')
     model_id = request.form.get('model', 'wav2vec2_lv60')
+    
+    accent_name = ACCENT_MAP.get(accent_code, "American")
     
     if model_id not in MODELS or not MODELS[model_id]["model"]:
         return jsonify({"error": "Model not available"}), 400
@@ -962,9 +476,13 @@ def analyze():
     except Exception as e:
         return jsonify({"error": f"Inference failed: {e}"}), 500
     
-    phoneme_data = WORDS.get(word, {}).get(accent, {})
-    expected_espeak = phoneme_data.get("espeak", "N/A")
-    expected_ipa = phoneme_data.get("ipa", "N/A")
+    # Get phonemes lazily
+    phoneme_data = get_word_phonemes_lazy(word, accent_code)
+    if not phoneme_data:
+        phoneme_data = WORDS.get(word, {}).get(accent_name, {})
+    
+    expected_espeak = phoneme_data.get("espeak", "N/A") if phoneme_data else "N/A"
+    expected_ipa = phoneme_data.get("ipa", "N/A") if phoneme_data else "N/A"
     detected_ipa = espeak_to_ipa(transcription)
     
     score = calculate_score(transcription, expected_espeak)
