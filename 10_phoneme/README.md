@@ -1,11 +1,18 @@
-## Setup Instructions
+# Phoneme Pronunciation Trainer
 
-```
+Backend service for phoneme pronunciation training with accent variation support. Uses Wav2Vec2 models to analyze pronunciation accuracy.
+
+## Usage
+
+```bash
 docker build -t phoneme-app .
-docker build --no-cache -t phoneme-app .
 docker run -p 5000:5000 phoneme-app
-visit http://localhost:5000
-docker run -it phoneme-app bash
-ls -lh /root/.cache/huggingface/hub/
-ls -lh /root/.cache/torch/hub/
 ```
+
+Visit http://localhost:5000
+
+Features:
+- Select user mode (Native, Japanese, French)
+- Choose accent patterns
+- Record pronunciation and get accuracy scores
+- Uses eSpeak-NG for TTS and Wav2Vec2 for analysis
