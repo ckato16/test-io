@@ -186,6 +186,12 @@ PHONICS_DATA = {
             {"sound": "ough", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["through", "who"]},
             {"sound": "ough", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["though", "dough", "although"]},
             {"sound": "ough", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["bough", "plough"]}
+        ],
+        "W/Qu-modified Vowels": [
+            {"sound": "war", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["war", "warm", "warn", "ward", "wart", "swarm", "award", "reward"]},
+            {"sound": "quar", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["quarter", "quartz", "quart"]},
+            {"sound": "wor", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["word", "work", "worm", "worth", "world", "worse", "worship"]},
+            {"sound": "wa", "ipa": {"en-GB": "/ɒ/", "en-US": "/ɑ/", "en-AU": "/ɒ/", "en-IE": "/ɒ/", "en-IN": "/ɑ/", "en-CA": "/ɑ/"}, "es": {"en-GB": "O", "en-US": "A", "en-AU": "O", "en-IE": "O", "en-IN": "A", "en-CA": "A"}, "words": ["want", "wash", "watch", "water", "was", "what", "swan"]}
         ]
     }
 }
