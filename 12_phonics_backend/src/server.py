@@ -87,111 +87,111 @@ ESPEAK_TO_IPA = {
 PHONICS_DATA = {
     "Basic": {
         "Single Consonants": [
-            {"sound": "b", "ipa": "/b/", "es": {"en-GB": "b", "en-US": "b", "en-AU": "b", "en-IE": "b", "en-IN": "b", "en-CA": "b"}, "words": ["bat", "ball", "cab"]},
-            {"sound": "c", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["cat", "cup", "can"]},
-            {"sound": "d", "ipa": "/d/", "es": {"en-GB": "d", "en-US": "d", "en-AU": "d", "en-IE": "d", "en-IN": "d", "en-CA": "d"}, "words": ["dog", "red", "hand"]},
-            {"sound": "f", "ipa": "/f/", "es": {"en-GB": "f", "en-US": "f", "en-AU": "f", "en-IE": "f", "en-IN": "f", "en-CA": "f"}, "words": ["fish", "fun", "leaf"]},
-            {"sound": "g", "ipa": "/ɡ/", "es": {"en-GB": "g", "en-US": "g", "en-AU": "g", "en-IE": "g", "en-IN": "g", "en-CA": "g"}, "words": ["go", "big", "bag"]},
-            {"sound": "h", "ipa": "/h/", "es": {"en-GB": "h", "en-US": "h", "en-AU": "h", "en-IE": "h", "en-IN": "h", "en-CA": "h"}, "words": ["hat", "hot", "hen"]},
-            {"sound": "j", "ipa": "/dʒ/", "es": {"en-GB": "dZ", "en-US": "dZ", "en-AU": "dZ", "en-IE": "dZ", "en-IN": "dZ", "en-CA": "dZ"}, "words": ["jam", "jet", "jar"]},
-            {"sound": "k", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["kite", "key", "book"]},
-            {"sound": "l", "ipa": "/l/", "es": {"en-GB": "l", "en-US": "l", "en-AU": "l", "en-IE": "l", "en-IN": "l", "en-CA": "l"}, "words": ["lip", "leg", "ball"]},
-            {"sound": "m", "ipa": "/m/", "es": {"en-GB": "m", "en-US": "m", "en-AU": "m", "en-IE": "m", "en-IN": "m", "en-CA": "m"}, "words": ["man", "mum", "moon"]},
-            {"sound": "n", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["net", "sun", "pen"]},
-            {"sound": "p", "ipa": "/p/", "es": {"en-GB": "p", "en-US": "p", "en-AU": "p", "en-IE": "p", "en-IN": "p", "en-CA": "p"}, "words": ["pen", "cap", "pig"]},
-            {"sound": "r", "ipa": {"en-GB": "/ɑː/", "en-US": "/ɹ/", "en-AU": "/ɑː/", "en-IE": "/ɑː/", "en-IN": "/ɹ/", "en-CA": "/ɹ/"}, "es": {"en-GB": "A:", "en-US": "r", "en-AU": "A:", "en-IE": "A:", "en-IN": "r", "en-CA": "r"}, "words": ["red", "run", "car"]},
-            {"sound": "s", "ipa": "/s/", "es": {"en-GB": "s", "en-US": "s", "en-AU": "s", "en-IE": "s", "en-IN": "s", "en-CA": "s"}, "words": ["sun", "sock", "bus"]},
-            {"sound": "t", "ipa": "/t/", "es": {"en-GB": "t", "en-US": "t", "en-AU": "t", "en-IE": "t", "en-IN": "t", "en-CA": "t"}, "words": ["top", "cat", "ten"]},
-            {"sound": "v", "ipa": "/v/", "es": {"en-GB": "v", "en-US": "v", "en-AU": "v", "en-IE": "v", "en-IN": "v", "en-CA": "v"}, "words": ["van", "vet", "five"]},
-            {"sound": "w", "ipa": "/w/", "es": {"en-GB": "w", "en-US": "w", "en-AU": "w", "en-IE": "w", "en-IN": "w", "en-CA": "w"}, "words": ["wet", "win", "cow"]},
-            {"sound": "x", "ipa": "/ks/", "es": {"en-GB": "ks", "en-US": "ks", "en-AU": "ks", "en-IE": "ks", "en-IN": "ks", "en-CA": "ks"}, "words": ["box", "fox", "six"]},
-            {"sound": "y", "ipa": "/j/", "es": {"en-GB": "j", "en-US": "j", "en-AU": "j", "en-IE": "j", "en-IN": "j", "en-CA": "j"}, "words": ["yes", "yellow", "yum"]},
-            {"sound": "z", "ipa": "/z/", "es": {"en-GB": "z", "en-US": "z", "en-AU": "z", "en-IE": "z", "en-IN": "z", "en-CA": "z"}, "words": ["zip", "zoo", "buzz"]}
+            {"sound": "b", "ipa": "/b/", "es": {"en-GB": "b", "en-US": "b", "en-AU": "b", "en-IE": "b", "en-IN": "b", "en-CA": "b"}, "words": ["bat", "ball", "cab", "bed", "box"]},
+            {"sound": "c", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["cat", "cup", "can", "car", "cut"]},
+            {"sound": "d", "ipa": "/d/", "es": {"en-GB": "d", "en-US": "d", "en-AU": "d", "en-IE": "d", "en-IN": "d", "en-CA": "d"}, "words": ["dog", "red", "hand", "dad", "duck"]},
+            {"sound": "f", "ipa": "/f/", "es": {"en-GB": "f", "en-US": "f", "en-AU": "f", "en-IE": "f", "en-IN": "f", "en-CA": "f"}, "words": ["fish", "fun", "leaf", "fan", "fox"]},
+            {"sound": "g", "ipa": "/ɡ/", "es": {"en-GB": "g", "en-US": "g", "en-AU": "g", "en-IE": "g", "en-IN": "g", "en-CA": "g"}, "words": ["go", "big", "bag", "gun", "gum"]},
+            {"sound": "h", "ipa": "/h/", "es": {"en-GB": "h", "en-US": "h", "en-AU": "h", "en-IE": "h", "en-IN": "h", "en-CA": "h"}, "words": ["hat", "hot", "hen", "hop", "hug"]},
+            {"sound": "j", "ipa": "/dʒ/", "es": {"en-GB": "dZ", "en-US": "dZ", "en-AU": "dZ", "en-IE": "dZ", "en-IN": "dZ", "en-CA": "dZ"}, "words": ["jam", "jet", "jar", "jump", "joy"]},
+            {"sound": "k", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["kite", "key", "book", "kid", "kit"]},
+            {"sound": "l", "ipa": "/l/", "es": {"en-GB": "l", "en-US": "l", "en-AU": "l", "en-IE": "l", "en-IN": "l", "en-CA": "l"}, "words": ["lip", "leg", "ball", "log", "lap"]},
+            {"sound": "m", "ipa": "/m/", "es": {"en-GB": "m", "en-US": "m", "en-AU": "m", "en-IE": "m", "en-IN": "m", "en-CA": "m"}, "words": ["man", "mum", "moon", "map", "mat"]},
+            {"sound": "n", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["net", "sun", "pen", "nut", "nap"]},
+            {"sound": "p", "ipa": "/p/", "es": {"en-GB": "p", "en-US": "p", "en-AU": "p", "en-IE": "p", "en-IN": "p", "en-CA": "p"}, "words": ["pen", "cap", "pig", "pan", "pot"]},
+            {"sound": "r", "ipa": {"en-GB": "/ɑː/", "en-US": "/ɹ/", "en-AU": "/ɑː/", "en-IE": "/ɑː/", "en-IN": "/ɹ/", "en-CA": "/ɹ/"}, "es": {"en-GB": "A:", "en-US": "r", "en-AU": "A:", "en-IE": "A:", "en-IN": "r", "en-CA": "r"}, "words": ["red", "run", "car", "rat", "rug"]},
+            {"sound": "s", "ipa": "/s/", "es": {"en-GB": "s", "en-US": "s", "en-AU": "s", "en-IE": "s", "en-IN": "s", "en-CA": "s"}, "words": ["sun", "sock", "bus", "sit", "sat"]},
+            {"sound": "t", "ipa": "/t/", "es": {"en-GB": "t", "en-US": "t", "en-AU": "t", "en-IE": "t", "en-IN": "t", "en-CA": "t"}, "words": ["top", "cat", "ten", "tap", "tub"]},
+            {"sound": "v", "ipa": "/v/", "es": {"en-GB": "v", "en-US": "v", "en-AU": "v", "en-IE": "v", "en-IN": "v", "en-CA": "v"}, "words": ["van", "vet", "five", "vine", "vote"]},
+            {"sound": "w", "ipa": "/w/", "es": {"en-GB": "w", "en-US": "w", "en-AU": "w", "en-IE": "w", "en-IN": "w", "en-CA": "w"}, "words": ["wet", "win", "cow", "web", "wig"]},
+            {"sound": "x", "ipa": "/ks/", "es": {"en-GB": "ks", "en-US": "ks", "en-AU": "ks", "en-IE": "ks", "en-IN": "ks", "en-CA": "ks"}, "words": ["box", "fox", "six", "ax", "mix"]},
+            {"sound": "y", "ipa": "/j/", "es": {"en-GB": "j", "en-US": "j", "en-AU": "j", "en-IE": "j", "en-IN": "j", "en-CA": "j"}, "words": ["yes", "yellow", "yum", "yam", "yak"]},
+            {"sound": "z", "ipa": "/z/", "es": {"en-GB": "z", "en-US": "z", "en-AU": "z", "en-IE": "z", "en-IN": "z", "en-CA": "z"}, "words": ["zip", "zoo", "buzz", "zap", "zen"]}
         ],
         "Consonant Digraphs": [
-            {"sound": "ch", "ipa": "/tʃ/", "es": {"en-GB": "tS", "en-US": "tS", "en-AU": "tS", "en-IE": "tS", "en-IN": "tS", "en-CA": "tS"}, "words": ["chip", "chair", "lunch"]},
-            {"sound": "ck", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["duck", "clock", "sock"]},
-            {"sound": "ng", "ipa": "/ŋ/", "es": {"en-GB": "N", "en-US": "N", "en-AU": "N", "en-IE": "N", "en-IN": "N", "en-CA": "N"}, "words": ["ring", "sing", "long"]},
-            {"sound": "nk", "ipa": "/ŋk/", "es": {"en-GB": "Nk", "en-US": "Nk", "en-AU": "Nk", "en-IE": "Nk", "en-IN": "Nk", "en-CA": "Nk"}, "words": ["bank", "sink", "think"]},
-            {"sound": "qu", "ipa": "/kw/", "es": {"en-GB": "kw", "en-US": "kw", "en-AU": "kw", "en-IE": "kw", "en-IN": "kw", "en-CA": "kw"}, "words": ["queen", "quick", "quiz"]},
-            {"sound": "sh", "ipa": "/ʃ/", "es": {"en-GB": "S", "en-US": "S", "en-AU": "S", "en-IE": "S", "en-IN": "S", "en-CA": "S"}, "words": ["ship", "fish", "shop"]},
-            {"sound": "th", "ipa": "/θ/ /ð/", "es": {"en-GB": "T @", "en-US": "T @", "en-AU": "T @", "en-IE": "T @", "en-IN": "T @", "en-CA": "T @"}, "words": ["thin", "this", "bath"]}
+            {"sound": "ch", "ipa": "/tʃ/", "es": {"en-GB": "tS", "en-US": "tS", "en-AU": "tS", "en-IE": "tS", "en-IN": "tS", "en-CA": "tS"}, "words": ["chip", "chair", "lunch", "chat", "chin"]},
+            {"sound": "ck", "ipa": "/k/", "es": {"en-GB": "k", "en-US": "k", "en-AU": "k", "en-IE": "k", "en-IN": "k", "en-CA": "k"}, "words": ["duck", "clock", "sock", "back", "pack"]},
+            {"sound": "ng", "ipa": "/ŋ/", "es": {"en-GB": "N", "en-US": "N", "en-AU": "N", "en-IE": "N", "en-IN": "N", "en-CA": "N"}, "words": ["ring", "sing", "long", "song", "wing"]},
+            {"sound": "nk", "ipa": "/ŋk/", "es": {"en-GB": "Nk", "en-US": "Nk", "en-AU": "Nk", "en-IE": "Nk", "en-IN": "Nk", "en-CA": "Nk"}, "words": ["bank", "sink", "think", "tank", "wink"]},
+            {"sound": "qu", "ipa": "/kw/", "es": {"en-GB": "kw", "en-US": "kw", "en-AU": "kw", "en-IE": "kw", "en-IN": "kw", "en-CA": "kw"}, "words": ["queen", "quick", "quiz", "quilt", "quit"]},
+            {"sound": "sh", "ipa": "/ʃ/", "es": {"en-GB": "S", "en-US": "S", "en-AU": "S", "en-IE": "S", "en-IN": "S", "en-CA": "S"}, "words": ["ship", "fish", "shop", "shell", "shut"]},
+            {"sound": "th", "ipa": "/θ/ /ð/", "es": {"en-GB": "T @", "en-US": "T @", "en-AU": "T @", "en-IE": "T @", "en-IN": "T @", "en-CA": "T @"}, "words": ["thin", "this", "bath", "that", "then"]}
         ],
         "Single Vowels": [
-            {"sound": "a", "ipa": "/æ/", "es": {"en-GB": "a", "en-US": "a", "en-AU": "a", "en-IE": "a", "en-IN": "a", "en-CA": "a"}, "words": ["ant", "apple", "cat"]},
-            {"sound": "e", "ipa": "/ɛ/", "es": {"en-GB": "E", "en-US": "E", "en-AU": "E", "en-IE": "E", "en-IN": "E", "en-CA": "E"}, "words": ["egg", "bed", "pen"]},
-            {"sound": "i", "ipa": "/ɪ/", "es": {"en-GB": "I", "en-US": "I", "en-AU": "I", "en-IE": "I", "en-IN": "I", "en-CA": "I"}, "words": ["in", "sit", "pig"]},
-            {"sound": "o", "ipa": "/ɒ/", "es": {"en-GB": "O", "en-US": "O", "en-AU": "O", "en-IE": "O", "en-IN": "O", "en-CA": "O"}, "words": ["on", "hot", "dog"]},
-            {"sound": "u", "ipa": "/ʌ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["up", "sun", "cup"]}
+            {"sound": "a", "ipa": "/æ/", "es": {"en-GB": "a", "en-US": "a", "en-AU": "a", "en-IE": "a", "en-IN": "a", "en-CA": "a"}, "words": ["ant", "apple", "cat", "hat", "map"]},
+            {"sound": "e", "ipa": "/ɛ/", "es": {"en-GB": "E", "en-US": "E", "en-AU": "E", "en-IE": "E", "en-IN": "E", "en-CA": "E"}, "words": ["egg", "bed", "pen", "red", "net"]},
+            {"sound": "i", "ipa": "/ɪ/", "es": {"en-GB": "I", "en-US": "I", "en-AU": "I", "en-IE": "I", "en-IN": "I", "en-CA": "I"}, "words": ["in", "sit", "pig", "pin", "hit"]},
+            {"sound": "o", "ipa": "/ɒ/", "es": {"en-GB": "O", "en-US": "O", "en-AU": "O", "en-IE": "O", "en-IN": "O", "en-CA": "O"}, "words": ["on", "hot", "dog", "pot", "top"]},
+            {"sound": "u", "ipa": "/ʌ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["up", "sun", "cup", "bug", "rug"]}
         ],
         "Vowel Digraphs": [
-            {"sound": "ai", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["snail", "rain", "train"]},
-            {"sound": "au", "ipa": "/ɔː/", "es": {"en-GB": "O:", "en-US": "O:", "en-AU": "O:", "en-IE": "O:", "en-IN": "O:", "en-CA": "O:"}, "words": ["haul", "cause", "pause"]},
-            {"sound": "aw", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔ/", "en-CA": "/ɔ/"}, "es": {"en-GB": "O:", "en-US": "O", "en-AU": "O:", "en-IE": "O:", "en-IN": "O", "en-CA": "O"}, "words": ["yawn", "paw", "claw"]},
-            {"sound": "ay", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["day", "play", "stay"]},
-            {"sound": "ea", "ipa": "/iː/", "es": {"en-GB": "i:", "en-US": "i:", "en-AU": "i:", "en-IE": "i:", "en-IN": "i:", "en-CA": "i:"}, "words": ["tea", "meat", "seat"]},
-            {"sound": "ea", "ipa": "/ɛ/", "es": {"en-GB": "E", "en-US": "E", "en-AU": "E", "en-IE": "E", "en-IN": "E", "en-CA": "E"}, "words": ["bread", "weather", "head"]},
-            {"sound": "ee", "ipa": "/iː/", "es": {"en-GB": "i:", "en-US": "i:", "en-AU": "i:", "en-IE": "i:", "en-IN": "i:", "en-CA": "i:"}, "words": ["see", "tree", "green"]},
-            {"sound": "ew", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["chew", "few", "new"]},
-            {"sound": "ie", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["tie", "pie", "die"]},
-            {"sound": "oa", "ipa": "/əʊ/", "es": {"en-GB": "@U", "en-US": "@U", "en-AU": "@U", "en-IE": "@U", "en-IN": "@U", "en-CA": "@U"}, "words": ["goat", "road", "boat"]},
-            {"sound": "oi", "ipa": "/ɔɪ/", "es": {"en-GB": "OI", "en-US": "OI", "en-AU": "OI", "en-IE": "OI", "en-IN": "OI", "en-CA": "OI"}, "words": ["spoil", "coin", "noise"]},
-            {"sound": "oo", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["zoo", "moon", "food"]},
-            {"sound": "oo", "ipa": "/ʊ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["book", "look", "foot"]},
-            {"sound": "ou", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["out", "shout", "cloud"]},
-            {"sound": "ow", "ipa": {"en-GB": "/əʊ/", "en-US": "/aʊ/", "en-AU": "/əʊ/", "en-IE": "/əʊ/", "en-IN": "/aʊ/", "en-CA": "/aʊ/"}, "es": {"en-GB": "@U", "en-US": "aU", "en-AU": "@U", "en-IE": "@U", "en-IN": "aU", "en-CA": "aU"}, "words": ["brown", "cow", "down"]},
-            {"sound": "oy", "ipa": "/ɔɪ/", "es": {"en-GB": "OI", "en-US": "OI", "en-AU": "OI", "en-IE": "OI", "en-IN": "OI", "en-CA": "OI"}, "words": ["boy", "toy", "coin"]}
+            {"sound": "ai", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["snail", "rain", "train", "paint", "tail"]},
+            {"sound": "au", "ipa": "/ɔː/", "es": {"en-GB": "O:", "en-US": "O:", "en-AU": "O:", "en-IE": "O:", "en-IN": "O:", "en-CA": "O:"}, "words": ["haul", "cause", "pause", "fault", "launch"]},
+            {"sound": "aw", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔ/", "en-CA": "/ɔ/"}, "es": {"en-GB": "O:", "en-US": "O", "en-AU": "O:", "en-IE": "O:", "en-IN": "O", "en-CA": "O"}, "words": ["yawn", "paw", "claw", "draw", "straw"]},
+            {"sound": "ay", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["day", "play", "stay", "say", "way"]},
+            {"sound": "ea", "ipa": "/iː/", "es": {"en-GB": "i:", "en-US": "i:", "en-AU": "i:", "en-IE": "i:", "en-IN": "i:", "en-CA": "i:"}, "words": ["tea", "meat", "seat", "beach", "leaf"]},
+            {"sound": "ea", "ipa": "/ɛ/", "es": {"en-GB": "E", "en-US": "E", "en-AU": "E", "en-IE": "E", "en-IN": "E", "en-CA": "E"}, "words": ["bread", "weather", "head", "dead", "spread"]},
+            {"sound": "ee", "ipa": "/iː/", "es": {"en-GB": "i:", "en-US": "i:", "en-AU": "i:", "en-IE": "i:", "en-IN": "i:", "en-CA": "i:"}, "words": ["see", "tree", "green", "bee", "seed"]},
+            {"sound": "ew", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["chew", "few", "new", "dew", "flew"]},
+            {"sound": "ie", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["tie", "pie", "die", "lie", "cried"]},
+            {"sound": "oa", "ipa": "/əʊ/", "es": {"en-GB": "@U", "en-US": "@U", "en-AU": "@U", "en-IE": "@U", "en-IN": "@U", "en-CA": "@U"}, "words": ["goat", "road", "boat", "coat", "load"]},
+            {"sound": "oi", "ipa": "/ɔɪ/", "es": {"en-GB": "OI", "en-US": "OI", "en-AU": "OI", "en-IE": "OI", "en-IN": "OI", "en-CA": "OI"}, "words": ["spoil", "coin", "noise", "join", "point"]},
+            {"sound": "oo", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["zoo", "moon", "food", "room", "cool"]},
+            {"sound": "oo", "ipa": "/ʊ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["book", "look", "foot", "good", "wood"]},
+            {"sound": "ou", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["out", "shout", "cloud", "house", "mouse"]},
+            {"sound": "ow", "ipa": {"en-GB": "/əʊ/", "en-US": "/aʊ/", "en-AU": "/əʊ/", "en-IE": "/əʊ/", "en-IN": "/aʊ/", "en-CA": "/aʊ/"}, "es": {"en-GB": "@U", "en-US": "aU", "en-AU": "@U", "en-IE": "@U", "en-IN": "aU", "en-CA": "aU"}, "words": ["brown", "cow", "down", "town", "how"]},
+            {"sound": "oy", "ipa": "/ɔɪ/", "es": {"en-GB": "OI", "en-US": "OI", "en-AU": "OI", "en-IE": "OI", "en-IN": "OI", "en-CA": "OI"}, "words": ["boy", "toy", "coin", "joy", "soy"]}
         ],
         "Trigraphs": [
-            {"sound": "igh", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["high", "night", "light"]}
+            {"sound": "igh", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["high", "night", "light", "right", "bright"]}
         ],
         "R-controlled Vowels": [
-            {"sound": "air", "ipa": {"en-GB": "/ɛə/", "en-US": "/ɛɹ/", "en-AU": "/ɛə/", "en-IE": "/ɛə/", "en-IN": "/ɛɹ/", "en-CA": "/ɛɹ/"}, "es": {"en-GB": "e@", "en-US": "e r", "en-AU": "e@", "en-IE": "e@", "en-IN": "e r", "en-CA": "e r"}, "words": ["hair", "fair", "chair"]},
-            {"sound": "ar", "ipa": {"en-GB": "/ɑː/", "en-US": "/ɑɹ/", "en-AU": "/ɑː/", "en-IE": "/ɑː/", "en-IN": "/ɑɹ/", "en-CA": "/ɑɹ/"}, "es": {"en-GB": "A:", "en-US": "A r", "en-AU": "A:", "en-IE": "A:", "en-IN": "A r", "en-CA": "A r"}, "words": ["car", "star", "farm"]},
-            {"sound": "are", "ipa": {"en-GB": "/ɛə/", "en-US": "/ɛɹ/", "en-AU": "/ɛə/", "en-IE": "/ɛə/", "en-IN": "/ɛɹ/", "en-CA": "/ɛɹ/"}, "es": {"en-GB": "e@", "en-US": "e r", "en-AU": "e@", "en-IE": "e@", "en-IN": "e r", "en-CA": "e r"}, "words": ["care", "share", "bare"]},
-            {"sound": "ear", "ipa": {"en-GB": "/ɪə/", "en-US": "/ɪɹ/", "en-AU": "/ɪə/", "en-IE": "/ɪə/", "en-IN": "/ɪɹ/", "en-CA": "/ɪɹ/"}, "es": {"en-GB": "i@", "en-US": "i r", "en-AU": "i@", "en-IE": "i@", "en-IN": "i r", "en-CA": "i r"}, "words": ["hear", "near", "dear"]},
-            {"sound": "er", "ipa": {"en-GB": "/ə/", "en-US": "/ɹ/", "en-AU": "/ə/", "en-IE": "/ə/", "en-IN": "/ɹ/", "en-CA": "/ɹ/"}, "es": {"en-GB": "@", "en-US": "r", "en-AU": "@", "en-IE": "@", "en-IN": "r", "en-CA": "r"}, "words": ["letter", "better", "summer"]},
-            {"sound": "ir", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["bird", "girl", "shirt"]},
-            {"sound": "ire", "ipa": {"en-GB": "/aɪə/", "en-US": "/aɪɹ/", "en-AU": "/aɪə/", "en-IE": "/aɪə/", "en-IN": "/aɪɹ/", "en-CA": "/aɪɹ/"}, "es": {"en-GB": "aI@", "en-US": "aI r", "en-AU": "aI@", "en-IE": "aI@", "en-IN": "aI r", "en-CA": "aI r"}, "words": ["fire", "wire", "tire"]},
-            {"sound": "or", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["fork", "corn", "short"]},
-            {"sound": "ur", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["nurse", "turn", "hurt"]},
-            {"sound": "ure", "ipa": {"en-GB": "/ɔə/", "en-US": "/ɔɹ/", "en-AU": "/ɔə/", "en-IE": "/ɔə/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O@", "en-US": "O r", "en-AU": "O@", "en-IE": "O@", "en-IN": "O r", "en-CA": "O r"}, "words": ["pure", "cure", "sure"]}
+            {"sound": "air", "ipa": {"en-GB": "/ɛə/", "en-US": "/ɛɹ/", "en-AU": "/ɛə/", "en-IE": "/ɛə/", "en-IN": "/ɛɹ/", "en-CA": "/ɛɹ/"}, "es": {"en-GB": "e@", "en-US": "e r", "en-AU": "e@", "en-IE": "e@", "en-IN": "e r", "en-CA": "e r"}, "words": ["hair", "fair", "chair", "pair", "stair"]},
+            {"sound": "ar", "ipa": {"en-GB": "/ɑː/", "en-US": "/ɑɹ/", "en-AU": "/ɑː/", "en-IE": "/ɑː/", "en-IN": "/ɑɹ/", "en-CA": "/ɑɹ/"}, "es": {"en-GB": "A:", "en-US": "A r", "en-AU": "A:", "en-IE": "A:", "en-IN": "A r", "en-CA": "A r"}, "words": ["car", "star", "farm", "park", "hard"]},
+            {"sound": "are", "ipa": {"en-GB": "/ɛə/", "en-US": "/ɛɹ/", "en-AU": "/ɛə/", "en-IE": "/ɛə/", "en-IN": "/ɛɹ/", "en-CA": "/ɛɹ/"}, "es": {"en-GB": "e@", "en-US": "e r", "en-AU": "e@", "en-IE": "e@", "en-IN": "e r", "en-CA": "e r"}, "words": ["care", "share", "bare", "dare", "scare"]},
+            {"sound": "ear", "ipa": {"en-GB": "/ɪə/", "en-US": "/ɪɹ/", "en-AU": "/ɪə/", "en-IE": "/ɪə/", "en-IN": "/ɪɹ/", "en-CA": "/ɪɹ/"}, "es": {"en-GB": "i@", "en-US": "i r", "en-AU": "i@", "en-IE": "i@", "en-IN": "i r", "en-CA": "i r"}, "words": ["hear", "near", "dear", "fear", "clear"]},
+            {"sound": "er", "ipa": {"en-GB": "/ə/", "en-US": "/ɹ/", "en-AU": "/ə/", "en-IE": "/ə/", "en-IN": "/ɹ/", "en-CA": "/ɹ/"}, "es": {"en-GB": "@", "en-US": "r", "en-AU": "@", "en-IE": "@", "en-IN": "r", "en-CA": "r"}, "words": ["letter", "better", "summer", "water", "matter"]},
+            {"sound": "ir", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["bird", "girl", "shirt", "dirt", "third"]},
+            {"sound": "ire", "ipa": {"en-GB": "/aɪə/", "en-US": "/aɪɹ/", "en-AU": "/aɪə/", "en-IE": "/aɪə/", "en-IN": "/aɪɹ/", "en-CA": "/aɪɹ/"}, "es": {"en-GB": "aI@", "en-US": "aI r", "en-AU": "aI@", "en-IE": "aI@", "en-IN": "aI r", "en-CA": "aI r"}, "words": ["fire", "wire", "tire", "hire", "sire"]},
+            {"sound": "or", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["fork", "corn", "short", "born", "storm"]},
+            {"sound": "ur", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["nurse", "turn", "hurt", "burn", "curb"]},
+            {"sound": "ure", "ipa": {"en-GB": "/ɔə/", "en-US": "/ɔɹ/", "en-AU": "/ɔə/", "en-IE": "/ɔə/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O@", "en-US": "O r", "en-AU": "O@", "en-IE": "O@", "en-IN": "O r", "en-CA": "O r"}, "words": ["pure", "cure", "sure", "lure", "endure"]}
         ],
         "Silent E Patterns": [
-            {"sound": "a_e", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["cake", "name", "gate"]},
-            {"sound": "i_e", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["smile", "time", "bike"]},
-            {"sound": "o_e", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["home", "bone", "rose"]},
-            {"sound": "u_e", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["huge", "cube", "tune"]}
+            {"sound": "a_e", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["cake", "name", "gate", "lake", "make"]},
+            {"sound": "i_e", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["smile", "time", "bike", "like", "five"]},
+            {"sound": "o_e", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["home", "bone", "rose", "hope", "note"]},
+            {"sound": "u_e", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["huge", "cube", "tune", "mule", "fuse"]}
         ]
     },
     "Advanced": {
         "Soft C & G": [
-            {"sound": "c", "ipa": "/s/", "es": {"en-GB": "s", "en-US": "s", "en-AU": "s", "en-IE": "s", "en-IN": "s", "en-CA": "s"}, "words": ["city", "cent", "circle"]},
-            {"sound": "g", "ipa": "/dʒ/", "es": {"en-GB": "dZ", "en-US": "dZ", "en-AU": "dZ", "en-IE": "dZ", "en-IN": "dZ", "en-CA": "dZ"}, "words": ["gym", "gem", "giant"]}
+            {"sound": "c", "ipa": "/s/", "es": {"en-GB": "s", "en-US": "s", "en-AU": "s", "en-IE": "s", "en-IN": "s", "en-CA": "s"}, "words": ["city", "cent", "circle", "cease", "cycle"]},
+            {"sound": "g", "ipa": "/dʒ/", "es": {"en-GB": "dZ", "en-US": "dZ", "en-AU": "dZ", "en-IE": "dZ", "en-IN": "dZ", "en-CA": "dZ"}, "words": ["gym", "gem", "giant", "giraffe", "gist"]}
         ],
         "Y as Vowel": [
-            {"sound": "y", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["my", "cry", "sky"]},
-            {"sound": "y", "ipa": "/ɪ/", "es": {"en-GB": "I", "en-US": "I", "en-AU": "I", "en-IE": "I", "en-IN": "I", "en-CA": "I"}, "words": ["happy", "baby", "lady"]}
+            {"sound": "y", "ipa": "/aɪ/", "es": {"en-GB": "aI", "en-US": "aI", "en-AU": "aI", "en-IE": "aI", "en-IN": "aI", "en-CA": "aI"}, "words": ["my", "cry", "sky", "fly", "dry"]},
+            {"sound": "y", "ipa": "/ɪ/", "es": {"en-GB": "I", "en-US": "I", "en-AU": "I", "en-IE": "I", "en-IN": "I", "en-CA": "I"}, "words": ["happy", "baby", "lady", "candy", "funny"]}
         ],
         "Silent Letters": [
-            {"sound": "gn", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["gnat", "gnome", "sign"]},
-            {"sound": "kn", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["knee", "know", "knife"]},
-            {"sound": "ph", "ipa": "/f/", "es": {"en-GB": "f", "en-US": "f", "en-AU": "f", "en-IE": "f", "en-IN": "f", "en-CA": "f"}, "words": ["phone", "photo", "graph"]},
-            {"sound": "wr", "ipa": "/r/", "es": {"en-GB": "r", "en-US": "r", "en-AU": "r", "en-IE": "r", "en-IN": "r", "en-CA": "r"}, "words": ["write", "wrong", "wrap"]}
+            {"sound": "gn", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["gnat", "gnome", "sign", "design", "align"]},
+            {"sound": "kn", "ipa": "/n/", "es": {"en-GB": "n", "en-US": "n", "en-AU": "n", "en-IE": "n", "en-IN": "n", "en-CA": "n"}, "words": ["knee", "know", "knife", "knock", "knight"]},
+            {"sound": "ph", "ipa": "/f/", "es": {"en-GB": "f", "en-US": "f", "en-AU": "f", "en-IE": "f", "en-IN": "f", "en-CA": "f"}, "words": ["phone", "photo", "graph", "elephant", "phrase"]},
+            {"sound": "wr", "ipa": "/r/", "es": {"en-GB": "r", "en-US": "r", "en-AU": "r", "en-IE": "r", "en-IN": "r", "en-CA": "r"}, "words": ["write", "wrong", "wrap", "wrist", "wreck"]}
         ],
         "Quadgraphs": [
-            {"sound": "augh", "ipa": "/ɔ/", "es": {"en-GB": "O", "en-US": "O", "en-AU": "O", "en-IE": "O", "en-IN": "O", "en-CA": "O"}, "words": ["caught", "taught", "daughter"]},
-            {"sound": "eigh", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["eight", "weight", "neighbor"]},
-            {"sound": "ough", "ipa": "/ʌ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["tough", "rough", "enough"]},
-            {"sound": "ough", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["through", "who"]},
-            {"sound": "ough", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["though", "dough", "although"]},
-            {"sound": "ough", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["bough", "plough"]}
+            {"sound": "augh", "ipa": "/ɔ/", "es": {"en-GB": "O", "en-US": "O", "en-AU": "O", "en-IE": "O", "en-IN": "O", "en-CA": "O"}, "words": ["caught", "taught", "daughter", "naughty", "fraught"]},
+            {"sound": "eigh", "ipa": "/eɪ/", "es": {"en-GB": "eI", "en-US": "eI", "en-AU": "eI", "en-IE": "eI", "en-IN": "eI", "en-CA": "eI"}, "words": ["eight", "weight", "neighbor", "sleigh", "weigh"]},
+            {"sound": "ough", "ipa": "/ʌ/", "es": {"en-GB": "U", "en-US": "U", "en-AU": "U", "en-IE": "U", "en-IN": "U", "en-CA": "U"}, "words": ["tough", "rough", "enough", "trough", "slough"]},
+            {"sound": "ough", "ipa": "/uː/", "es": {"en-GB": "u:", "en-US": "u:", "en-AU": "u:", "en-IE": "u:", "en-IN": "u:", "en-CA": "u:"}, "words": ["through", "who", "threw", "flew", "grew"]},
+            {"sound": "ough", "ipa": "/oʊ/", "es": {"en-GB": "oU", "en-US": "oU", "en-AU": "oU", "en-IE": "oU", "en-IN": "oU", "en-CA": "oU"}, "words": ["though", "dough", "although", "thorough", "borough"]},
+            {"sound": "ough", "ipa": "/aʊ/", "es": {"en-GB": "aU", "en-US": "aU", "en-AU": "aU", "en-IE": "aU", "en-IN": "aU", "en-CA": "aU"}, "words": ["bough", "plough", "drought", "slough", "brought"]}
         ],
         "W/Qu-modified Vowels": [
-            {"sound": "war", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["war", "warm", "warn", "ward", "wart", "swarm", "award", "reward"]},
-            {"sound": "quar", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["quarter", "quartz", "quart"]},
-            {"sound": "wor", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["word", "work", "worm", "worth", "world", "worse", "worship"]},
-            {"sound": "wa", "ipa": {"en-GB": "/ɒ/", "en-US": "/ɑ/", "en-AU": "/ɒ/", "en-IE": "/ɒ/", "en-IN": "/ɑ/", "en-CA": "/ɑ/"}, "es": {"en-GB": "O", "en-US": "A", "en-AU": "O", "en-IE": "O", "en-IN": "A", "en-CA": "A"}, "words": ["want", "wash", "watch", "water", "was", "what", "swan"]}
+            {"sound": "war", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["war", "warm", "warn", "ward", "wart"]},
+            {"sound": "quar", "ipa": {"en-GB": "/ɔː/", "en-US": "/ɔɹ/", "en-AU": "/ɔː/", "en-IE": "/ɔː/", "en-IN": "/ɔɹ/", "en-CA": "/ɔɹ/"}, "es": {"en-GB": "O:", "en-US": "O r", "en-AU": "O:", "en-IE": "O:", "en-IN": "O r", "en-CA": "O r"}, "words": ["quarter", "quartz", "quart", "quarry", "squash"]},
+            {"sound": "wor", "ipa": {"en-GB": "/ɜː/", "en-US": "/ɜɹ/", "en-AU": "/ɜː/", "en-IE": "/ɜː/", "en-IN": "/ɜɹ/", "en-CA": "/ɜɹ/"}, "es": {"en-GB": "3:", "en-US": "3 r", "en-AU": "3:", "en-IE": "3:", "en-IN": "3 r", "en-CA": "3 r"}, "words": ["word", "work", "worm", "worth", "world"]},
+            {"sound": "wa", "ipa": {"en-GB": "/ɒ/", "en-US": "/ɑ/", "en-AU": "/ɒ/", "en-IE": "/ɒ/", "en-IN": "/ɑ/", "en-CA": "/ɑ/"}, "es": {"en-GB": "O", "en-US": "A", "en-AU": "O", "en-IE": "O", "en-IN": "A", "en-CA": "A"}, "words": ["want", "wash", "watch", "water", "was"]}
         ]
     }
 }
